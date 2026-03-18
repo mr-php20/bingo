@@ -61,17 +61,17 @@ export default function Lobby() {
       {isHost && (
         <div className="series-section">
           <p className="label">Game Format</p>
-          <div className="series-options">
+          <select
+            className="select-series"
+            value={bestOf}
+            onChange={e => setSeries(Number(e.target.value))}
+          >
             {seriesOptions.map(n => (
-              <button
-                key={n}
-                className={`btn btn-series ${bestOf === n ? 'active' : ''}`}
-                onClick={() => setSeries(n)}
-              >
-                {n === 1 ? 'Single' : `Best of ${n}`}
-              </button>
+              <option key={n} value={n}>
+                {n === 1 ? 'Single Game' : `Best of ${n}`}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
       )}
 

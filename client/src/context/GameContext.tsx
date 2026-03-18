@@ -87,6 +87,7 @@ function reducer(state: GameState, action: Action): GameState {
 
     case 'PLACE_NUMBER': {
       const { row, col } = action;
+      if (state.gridReady) return state; // locked
       if (state.grid[row][col] !== 0) return state; // cell occupied
       const nextNum = state.placementStack.length + 1;
       if (nextNum > 25) return state; // all placed

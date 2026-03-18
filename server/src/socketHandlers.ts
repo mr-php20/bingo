@@ -25,8 +25,8 @@ export function registerSocketHandlers(io: Server): void {
     // ---- CREATE ROOM ----
     socket.on('create-room', ({ playerName }: { playerName: string }) => {
       try {
-        if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
-          socket.emit('error', { message: 'Player name is required' });
+        if (!playerName || typeof playerName !== 'string' || playerName.trim().length < 3) {
+          socket.emit('error', { message: 'Name must be at least 3 characters' });
           return;
         }
         const { room, player } = createRoom(socket.id, playerName.trim().slice(0, 20));
@@ -40,8 +40,8 @@ export function registerSocketHandlers(io: Server): void {
     // ---- JOIN ROOM ----
     socket.on('join-room', ({ code, playerName }: { code: string; playerName: string }) => {
       try {
-        if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
-          socket.emit('error', { message: 'Player name is required' });
+        if (!playerName || typeof playerName !== 'string' || playerName.trim().length < 3) {
+          socket.emit('error', { message: 'Name must be at least 3 characters' });
           return;
         }
         if (!code || typeof code !== 'string') {

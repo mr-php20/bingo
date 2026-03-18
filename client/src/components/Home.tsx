@@ -20,13 +20,15 @@ export default function Home() {
     dispatch({ type: 'SET_PLAYER_NAME', name: e.target.value });
   };
 
+  const nameTooShort = state.playerName.trim().length < 3;
+
   const handleCreate = () => {
-    if (!state.playerName.trim()) return;
+    if (nameTooShort) return;
     createRoom();
   };
 
   const handleJoin = () => {
-    if (!state.playerName.trim() || !code.trim()) return;
+    if (nameTooShort || !code.trim()) return;
     joinRoom(code.trim());
   };
 
@@ -42,7 +44,7 @@ export default function Home() {
           <input
             type="text"
             className="input-name"
-            placeholder="Enter your name"
+            placeholder="Enter your name (min 3 chars)"
             value={state.playerName}
             onChange={handleNameChange}
             maxLength={20}
@@ -51,14 +53,14 @@ export default function Home() {
           <button
             className="btn btn-primary"
             onClick={handleCreate}
-            disabled={!state.playerName.trim()}
+            disabled={nameTooShort}
           >
             Create Game
           </button>
           <button
             className="btn btn-secondary"
-            onClick={() => { if (state.playerName.trim()) setMode('join'); }}
-            disabled={!state.playerName.trim()}
+            onClick={() => { if (!nameTooShort) setMode('join'); }}
+            disabled={nameTooShort}
           >
             Join Game
           </button>
@@ -80,7 +82,7 @@ export default function Home() {
           <button
             className="btn btn-primary"
             onClick={handleJoin}
-            disabled={!code.trim() || code.trim().length < 6}
+            disabled={!code.trim() || code.trim().length < 6 || nameTooShort}
           >
             Join Room
           </button>

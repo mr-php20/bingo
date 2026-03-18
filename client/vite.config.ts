@@ -2,7 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Use '/bingo/' for GitHub Pages (repo name), '/' for other hosting
+const base = process.env.GITHUB_PAGES === 'true' ? '/bingo/' : '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -16,21 +20,21 @@ export default defineConfig({
         background_color: '#1a1a2e',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: base,
+        start_url: base,
         icons: [
           {
-            src: '/icons/icon-192.png',
+            src: 'icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icons/icon-512.png',
+            src: 'icons/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/icons/icon-512.png',
+            src: 'icons/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

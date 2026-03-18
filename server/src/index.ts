@@ -18,9 +18,13 @@ app.get('/api/health', (_req, res) => {
 
 const httpServer = createServer(app);
 
+const allowedOrigins = process.env.CLIENT_ORIGIN
+  ? process.env.CLIENT_ORIGIN.split(',')
+  : ['http://localhost:5173'];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
   },
   pingTimeout: 60000,

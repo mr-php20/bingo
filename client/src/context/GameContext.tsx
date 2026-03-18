@@ -19,7 +19,7 @@ type Action =
   | { type: 'GRID_ACCEPTED' }
   | { type: 'OPPONENT_READY' }
   | { type: 'GRIDS_READY'; currentTurn: string }
-  | { type: 'NUMBER_CALLED'; number: number; calledBy: string; players: { id: string; completedLines: number; markedCell: { row: number; col: number } | null }[] }
+  | { type: 'NUMBER_CALLED'; number: number; calledBy: string; nextTurn: string | null; players: { id: string; completedLines: number; markedCell: { row: number; col: number } | null }[] }
   | { type: 'ROUND_WON'; winnerId: string; winnerName: string; scores: PlayerScore[]; currentRound: number; seriesOver: boolean }
   | { type: 'PLAYER_LEFT'; playerId: string; playerName: string }
   | { type: 'SET_ERROR'; message: string }
@@ -74,10 +74,10 @@ function reducer(state: GameState, action: Action): GameState {
         grid: createEmptyGrid(),
         placementStack: [],
         gridReady: false,
-        opponentReady: false,
+        readyCount: 0,
         marked: createEmptyMarked(),
         myCompletedLines: 0,
-        opponentCompletedLines: 0,
+        playersCompletedLines: {},
         calledNumbers: [],
         currentTurn: null,
         roundWinner: null,
@@ -187,7 +187,7 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, gridReady: true };
 
     case 'OPPONENT_READY':
-      return { ...state, opponentReady: true };
+      return { ...state, readyCount: state.readyCount + 1 };
 
     case 'GRIDS_READY':
       return {
@@ -196,7 +196,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentTurn: action.currentTurn,
         marked: createEmptyMarked(),
         myCompletedLines: 0,
-        opponentCompletedLines: 0,
+        playersCompletedLines: {},
         calledNumbers: [],
       };
 
@@ -207,19 +207,21 @@ function reducer(state: GameState, action: Action): GameState {
         newMarked[pos.row][pos.col] = true;
       }
       const myLines = countCompletedLines(newMarked);
-      const opponentData = action.players.find(p => p.id !== state.playerId);
 
-      // Determine next turn
-      const playerIds = state.players.map(p => p.id);
-      const nextTurn = playerIds.find(id => id !== action.calledBy) ?? action.calledBy;
+      const newPlayersLines: Record<string, number> = {};
+      for (const p of action.players) {
+        if (p.id !== state.playerId) {
+          newPlayersLines[p.id] = p.completedLines;
+        }
+      }
 
       return {
         ...state,
         marked: newMarked,
         calledNumbers: [...state.calledNumbers, action.number],
         myCompletedLines: myLines,
-        opponentCompletedLines: opponentData?.completedLines ?? state.opponentCompletedLines,
-        currentTurn: nextTurn,
+        playersCompletedLines: newPlayersLines,
+        currentTurn: action.nextTurn ?? state.currentTurn,
       };
     }
 
@@ -233,13 +235,28 @@ function reducer(state: GameState, action: Action): GameState {
         seriesOver: action.seriesOver,
       };
 
-    case 'PLAYER_LEFT':
+    case 'PLAYER_LEFT': {
+      const remaining = state.players.filter(p => p.id !== action.playerId);
       return {
         ...state,
-        players: state.players.filter(p => p.id !== action.playerId),
-        screen: 'home',
+        players: remaining,
+        screen: remaining.length > 0 ? 'lobby' : 'home',
+        grid: createEmptyGrid(),
+        placementStack: [],
+        gridReady: false,
+        readyCount: 0,
+        marked: createEmptyMarked(),
+        myCompletedLines: 0,
+        playersCompletedLines: {},
+        calledNumbers: [],
+        currentTurn: null,
+        roundWinner: null,
+        seriesOver: false,
+        currentRound: 1,
+        scores: [],
         error: `${action.playerName} left the game`,
       };
+    }
 
     case 'SET_ERROR':
       return { ...state, error: action.message };
@@ -328,7 +345,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'GRIDS_READY', currentTurn: data.currentTurn });
     });
 
-    socket.on('number-called', (data: { number: number; calledBy: string; players: { id: string; completedLines: number; markedCell: { row: number; col: number } | null }[] }) => {
+    socket.on('number-called', (data: { number: number; calledBy: string; nextTurn: string | null; players: { id: string; completedLines: number; markedCell: { row: number; col: number } | null }[] }) => {
       dispatch({ type: 'NUMBER_CALLED', ...data });
     });
 

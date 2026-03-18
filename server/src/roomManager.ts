@@ -51,8 +51,8 @@ export function joinRoom(socketId: string, code: string, playerName: string): { 
   if (!room) {
     throw new Error('Room not found. Check the code and try again.');
   }
-  if (room.players.size >= 2) {
-    throw new Error('Room is full. Only 2 players can join.');
+  if (room.players.size >= 10) {
+    throw new Error('Room is full.');
   }
   if (room.phase !== 'lobby') {
     throw new Error('Game already in progress.');

@@ -113,7 +113,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
         if (room.players.size < 2) {
-          socket.emit('error', { message: 'Need 2 players to start' });
+          socket.emit('error', { message: 'Need at least 2 players to start' });
           return;
         }
         setRoomPhase(room.code, 'setup');
@@ -167,6 +167,7 @@ export function registerSocketHandlers(io: Server): void {
           number,
           calledBy: player.id,
           players: callResult.players,
+          nextTurn: room.roundState?.currentTurn ?? null,
         });
 
         if (callResult.winner) {

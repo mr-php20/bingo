@@ -3,7 +3,7 @@ import { GRID_SIZE } from '../utils/bingo';
 
 export default function GridSetup() {
   const { state, dispatch, submitGrid } = useGame();
-  const { grid, placementStack, gridReady, opponentReady } = state;
+  const { grid, placementStack, gridReady, readyCount, players } = state;
 
   const nextNumber = placementStack.length + 1;
   const allPlaced = placementStack.length === 25;
@@ -54,9 +54,9 @@ export default function GridSetup() {
       <h2>Place Your Numbers</h2>
       <p className="setup-hint">
         {gridReady
-          ? opponentReady
-            ? 'Both ready! Starting...'
-            : 'Waiting for opponent...'
+          ? readyCount + 1 >= players.length
+            ? 'All ready! Starting...'
+            : `Waiting for players... (${readyCount + 1}/${players.length} ready)`
           : allPlaced
             ? 'All numbers placed! Hit Ready.'
             : `Tap a cell to place ${nextNumber}`}
@@ -111,7 +111,7 @@ export default function GridSetup() {
 
       {gridReady && (
         <div className="waiting-badge">
-          ✓ Grid submitted {opponentReady ? '' : '— waiting for opponent'}
+          ✓ Grid submitted {readyCount + 1 >= players.length ? '' : `— ${readyCount + 1}/${players.length} ready`}
         </div>
       )}
 

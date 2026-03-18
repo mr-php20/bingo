@@ -16,12 +16,12 @@ export default function GameBoard() {
   const { state, callNumber } = useGame();
   const {
     grid, marked, playerId, currentTurn,
-    calledNumbers, myCompletedLines, opponentCompletedLines,
+    calledNumbers, myCompletedLines, playersCompletedLines,
     players, currentRound, bestOf, scores, hideOpponentStatus,
   } = state;
 
   const isMyTurn = currentTurn === playerId;
-  const opponent = players.find(p => p.id !== playerId);
+  const currentPlayer = players.find(p => p.id === currentTurn);
   const completedLines = getCompletedLines(marked);
 
   const handleCellClick = (row: number, col: number) => {
@@ -40,7 +40,7 @@ export default function GameBoard() {
           </div>
         )}
         <div className={`turn-indicator ${isMyTurn ? 'my-turn' : 'opponent-turn'}`}>
-          {isMyTurn ? '🟢 Your Turn' : `🔴 ${opponent?.name ?? "Opponent"}'s Turn`}
+          {isMyTurn ? '🟢 Your Turn' : `🔴 ${currentPlayer?.name ?? "..."}'s Turn`}
         </div>
       </div>
 
@@ -53,16 +53,16 @@ export default function GameBoard() {
             </span>
           ))}
         </div>
-        {!hideOpponentStatus && (
-          <div className="bingo-row">
-            <span className="bingo-label">{opponent?.name ?? 'Opp'}: </span>
+        {!hideOpponentStatus && players.filter(p => p.id !== playerId).map(p => (
+          <div key={p.id} className="bingo-row">
+            <span className="bingo-label">{p.name}: </span>
             {BINGO_LETTERS.map((letter, i) => (
-              <span key={letter} className={`bingo-letter opponent ${i < opponentCompletedLines ? 'lit' : ''}`}>
+              <span key={letter} className={`bingo-letter opponent ${i < (playersCompletedLines[p.id] ?? 0) ? 'lit' : ''}`}>
                 {letter}
               </span>
             ))}
           </div>
-        )}
+        ))}
       </div>
 
       {scores.length > 0 && bestOf > 1 && (
@@ -83,10 +83,11 @@ export default function GameBoard() {
               const isMarked = marked[r][c];
               const canCall = isMyTurn && num > 0 && !calledNumbers.includes(num);
               const inLine = isCellInCompletedLine(r, c, completedLines);
+              const isLastCalled = num > 0 && calledNumbers.length > 0 && calledNumbers[calledNumbers.length - 1] === num;
               return (
                 <button
                   key={c}
-                  className={`grid-cell game-cell ${isMarked ? 'marked' : ''} ${canCall ? 'callable' : ''} ${inLine ? 'in-completed-line' : ''}`}
+                  className={`grid-cell game-cell ${isMarked ? 'marked' : ''} ${canCall ? 'callable' : ''} ${inLine ? 'in-completed-line' : ''} ${isLastCalled ? 'last-called' : ''}`}
                   onClick={() => handleCellClick(r, c)}
                   disabled={!canCall}
                 >

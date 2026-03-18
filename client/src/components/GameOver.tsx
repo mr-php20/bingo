@@ -1,5 +1,36 @@
 import { useGame } from '../context/GameContext';
 
+const CONFETTI_COLORS = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+
+function Confetti() {
+  const pieces = Array.from({ length: 30 }, (_, i) => ({
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 2}s`,
+    duration: `${2 + Math.random() * 2}s`,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    size: `${6 + Math.random() * 8}px`,
+  }));
+
+  return (
+    <div className="confetti-container" aria-hidden="true">
+      {pieces.map((p, i) => (
+        <div
+          key={i}
+          className="confetti-piece"
+          style={{
+            left: p.left,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+            backgroundColor: p.color,
+            width: p.size,
+            height: p.size,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function GameOver() {
   const { state, nextRound, continueGame, rematch, goHome } = useGame();
   const { roundWinner, playerId, scores, currentRound, bestOf } = state;
@@ -14,8 +45,11 @@ export default function GameOver() {
     : null;
   const iWonSeries = seriesWinner?.id === playerId;
 
+  const didWin = isSingleGame ? iWon : (isSeriesEnd ? iWonSeries : iWon);
+
   return (
     <div className="screen gameover-screen">
+      {didWin && <Confetti />}
       {isSingleGame || isSeriesEnd ? (
         <>
           <h2 className={`result-title ${(isSingleGame ? iWon : iWonSeries) ? 'win' : 'lose'}`}>

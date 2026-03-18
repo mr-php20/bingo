@@ -24,13 +24,13 @@ export interface GameState {
   grid: number[][];         // 5x5, 0 = empty
   placementStack: number[]; // cell indices in order placed
   gridReady: boolean;
-  opponentReady: boolean;
+  readyCount: number;
   // Gameplay
   currentTurn: string | null;
   calledNumbers: number[];
   marked: boolean[][];     // 5x5
   myCompletedLines: number;
-  opponentCompletedLines: number;
+  playersCompletedLines: Record<string, number>;
   // Round/Series
   currentRound: number;
   scores: PlayerScore[];
@@ -52,12 +52,12 @@ export const initialGameState: GameState = {
   grid: Array.from({ length: 5 }, () => Array(5).fill(0)),
   placementStack: [],
   gridReady: false,
-  opponentReady: false,
+  readyCount: 0,
   currentTurn: null,
   calledNumbers: [],
   marked: Array.from({ length: 5 }, () => Array(5).fill(false)),
   myCompletedLines: 0,
-  opponentCompletedLines: 0,
+  playersCompletedLines: {},
   currentRound: 1,
   scores: [],
   roundWinner: null,

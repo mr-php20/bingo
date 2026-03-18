@@ -1,10 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
 export default function Home() {
   const { state, dispatch, createRoom, joinRoom } = useGame();
   const [mode, setMode] = useState<'menu' | 'join'>('menu');
   const [code, setCode] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    if (roomParam) {
+      setCode(roomParam.toUpperCase());
+      setMode('join');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: 'SET_PLAYER_NAME', name: e.target.value });

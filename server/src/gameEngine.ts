@@ -52,10 +52,9 @@ export function submitGrid(room: Room, playerId: string, grid: number[][]): bool
   if (allReady) {
     // Initialize round state
     const players = Array.from(room.players.keys());
-    // Alternate first turn each round
-    const firstPlayerIndex = (room.currentRound - 1) % 2;
+    const firstPlayerIndex = (room.currentRound - 1) % players.length;
     room.roundState = {
-      gridsSubmitted: 2,
+      gridsSubmitted: players.length,
       currentTurn: players[firstPlayerIndex],
       calledNumbers: [],
       winner: null,
@@ -176,9 +175,10 @@ export function callNumber(
     const currentScore = room.scores.get(winner) ?? 0;
     room.scores.set(winner, currentScore + 1);
   } else {
-    // Switch turn
+    // Switch turn (round-robin)
     const playerIds = Array.from(room.players.keys());
-    rs.currentTurn = playerIds.find(id => id !== callerId) ?? callerId;
+    const currentIdx = playerIds.indexOf(callerId);
+    rs.currentTurn = playerIds[(currentIdx + 1) % playerIds.length];
   }
 
   return { players: results, winner };

@@ -6,15 +6,16 @@ export default function Lobby() {
   const { roomCode, players, bestOf, isHost, hideOpponentStatus } = state;
 
   const handleShare = useCallback(async () => {
-    const shareText = `Join my Bingo game! Code: ${roomCode}`;
+    const gameUrl = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+    const shareText = `Join my Bingo game!\n${gameUrl}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Bingo Game', text: shareText });
+        await navigator.share({ title: 'Bingo Game', text: shareText, url: gameUrl });
       } catch {
         // User cancelled
       }
     } else {
-      await navigator.clipboard.writeText(roomCode ?? '');
+      await navigator.clipboard.writeText(gameUrl);
     }
   }, [roomCode]);
 
@@ -46,14 +47,14 @@ export default function Lobby() {
       </div>
 
       <div className="players-section">
-        <p className="label">Players ({players.length}/2)</p>
+        <p className="label">Players ({players.length})</p>
         {players.map(p => (
           <div key={p.id} className="player-tag">
             {p.name} {p.id === state.playerId ? '(You)' : ''}
           </div>
         ))}
         {players.length < 2 && (
-          <div className="player-tag waiting">Waiting for opponent...</div>
+          <div className="player-tag waiting">Waiting for players...</div>
         )}
       </div>
 

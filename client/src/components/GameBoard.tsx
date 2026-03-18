@@ -16,7 +16,7 @@ export default function GameBoard() {
   const { state, callNumber } = useGame();
   const {
     grid, marked, playerId, currentTurn,
-    calledNumbers, myCompletedLines, playersCompletedLines,
+    calledNumbers, myCompletedLines, prevCompletedLineCount, playersCompletedLines,
     players, currentRound, bestOf, scores, hideOpponentStatus,
   } = state;
 
@@ -111,11 +111,12 @@ export default function GameBoard() {
             } else {
               x1 = GRID_SIZE; y1 = 0; x2 = 0; y2 = GRID_SIZE;
             }
+            const isNew = i >= prevCompletedLineCount;
             return (
               <line
-                key={i}
+                key={`${line.type}-${line.index}`}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                className="strike-line"
+                className={`strike-line ${isNew ? 'strike-new' : ''}`}
               />
             );
           })}

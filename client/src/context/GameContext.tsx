@@ -77,6 +77,7 @@ function reducer(state: GameState, action: Action): GameState {
         readyCount: 0,
         marked: createEmptyMarked(),
         myCompletedLines: 0,
+        prevCompletedLineCount: 0,
         playersCompletedLines: {},
         calledNumbers: [],
         currentTurn: null,
@@ -197,6 +198,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentTurn: action.currentTurn,
         marked: createEmptyMarked(),
         myCompletedLines: 0,
+        prevCompletedLineCount: 0,
         playersCompletedLines: {},
         calledNumbers: [],
       };
@@ -221,6 +223,7 @@ function reducer(state: GameState, action: Action): GameState {
         marked: newMarked,
         calledNumbers: [...state.calledNumbers, action.number],
         myCompletedLines: myLines,
+        prevCompletedLineCount: state.myCompletedLines,
         playersCompletedLines: newPlayersLines,
         currentTurn: action.nextTurn ?? state.currentTurn,
       };

@@ -86,17 +86,17 @@ export default function Lobby() {
           <label className="toggle-label">
             <input
               type="checkbox"
-              checked={hideOpponentStatus}
-              onChange={e => setHideOpponent(e.target.checked)}
+              checked={!hideOpponentStatus}
+              onChange={e => setHideOpponent(!e.target.checked)}
             />
-            <span className="toggle-text">Hide opponent's progress</span>
+            <span className="toggle-text">Show opponent's progress</span>
           </label>
         </div>
       )}
 
       {!isHost && hideOpponentStatus && (
         <div className="preference-section">
-          <p className="info-text">🙈 Opponent progress will be hidden</p>
+          <p className="info-text">🙈 Opponent progress is hidden</p>
         </div>
       )}
 

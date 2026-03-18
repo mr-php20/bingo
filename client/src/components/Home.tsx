@@ -3,7 +3,7 @@ import { useGame } from '../context/GameContext';
 
 export default function Home() {
   const { state, dispatch, createRoom, joinRoom } = useGame();
-  const [mode, setMode] = useState<'menu' | 'join'>('menu');
+  const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');
   const [code, setCode] = useState('');
 
   useEffect(() => {
@@ -11,7 +11,7 @@ export default function Home() {
     const roomParam = params.get('room');
     if (roomParam) {
       setCode(roomParam.toUpperCase());
-      setMode('join');
+      setMode('join-link');
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
@@ -88,6 +88,28 @@ export default function Home() {
           </button>
           <button className="btn btn-text" onClick={() => setMode('menu')}>
             Back
+          </button>
+        </div>
+      )}
+
+      {mode === 'join-link' && (
+        <div className="home-actions">
+          <p className="join-link-info">Joining room <strong>{code}</strong></p>
+          <input
+            type="text"
+            className="input-name"
+            placeholder="Enter your name (min 3 chars)"
+            value={state.playerName}
+            onChange={handleNameChange}
+            maxLength={20}
+            autoComplete="off"
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleJoin}
+            disabled={nameTooShort}
+          >
+            Join Game
           </button>
         </div>
       )}

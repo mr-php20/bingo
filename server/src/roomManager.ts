@@ -30,7 +30,7 @@ export function createRoom(socketId: string, playerName: string): { room: Room; 
     code,
     hostId: playerId,
     players: new Map([[playerId, player]]),
-    series: { bestOf: 1, hideOpponentStatus: false },
+    series: { bestOf: 1, hideOpponentStatus: true },
     scores: new Map([[playerId, 0]]),
     currentRound: 1,
     roundState: null,

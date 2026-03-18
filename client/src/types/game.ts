@@ -30,6 +30,7 @@ export interface GameState {
   calledNumbers: number[];
   marked: boolean[][];     // 5x5
   myCompletedLines: number;
+  prevCompletedLineCount: number;
   playersCompletedLines: Record<string, number>;
   // Round/Series
   currentRound: number;
@@ -48,7 +49,7 @@ export const initialGameState: GameState = {
   isHost: false,
   players: [],
   bestOf: 1,
-  hideOpponentStatus: false,
+  hideOpponentStatus: true,
   grid: Array.from({ length: 5 }, () => Array(5).fill(0)),
   placementStack: [],
   gridReady: false,
@@ -57,6 +58,7 @@ export const initialGameState: GameState = {
   calledNumbers: [],
   marked: Array.from({ length: 5 }, () => Array(5).fill(false)),
   myCompletedLines: 0,
+  prevCompletedLineCount: 0,
   playersCompletedLines: {},
   currentRound: 1,
   scores: [],

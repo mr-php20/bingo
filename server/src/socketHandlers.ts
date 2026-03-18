@@ -219,6 +219,11 @@ export function registerSocketHandlers(io: Server): void {
         if (!result) return;
         const { room } = result;
 
+        if (room.phase !== 'series-end' && room.phase !== 'round-end' && room.phase !== 'setup') {
+          socket.emit('error', { message: 'Cannot rematch from this state' });
+          return;
+        }
+
         resetSeries(room);
         io.to(room.code).emit('game-start', { phase: 'setup' });
       } catch (err: unknown) {

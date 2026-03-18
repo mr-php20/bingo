@@ -365,6 +365,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_ERROR', message: data.message });
     });
 
+    socket.on('reconnect', () => {
+      // After reconnection, the server no longer associates this socket with any room.
+      // Reset client to home so user can rejoin.
+      dispatch({ type: 'RESET' });
+      dispatch({ type: 'SET_ERROR', message: 'Connection was lost. Please rejoin the game.' });
+    });
+
     return () => {
       socket.disconnect();
     };

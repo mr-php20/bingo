@@ -1,3 +1,4 @@
+import React from 'react';
 import { useGame } from '../context/GameContext';
 import { GRID_SIZE, BINGO_LETTERS, getCompletedLines } from '../utils/bingo';
 import type { CompletedLine } from '../utils/bingo';
@@ -24,10 +25,18 @@ export default function GameBoard() {
   const currentPlayer = players.find(p => p.id === currentTurn);
   const completedLines = getCompletedLines(marked);
 
+  const pendingCallRef = React.useRef(false);
+
+  // Reset pending lock when turn changes
+  React.useEffect(() => {
+    pendingCallRef.current = false;
+  }, [currentTurn]);
+
   const handleCellClick = (row: number, col: number) => {
-    if (!isMyTurn) return;
+    if (!isMyTurn || pendingCallRef.current) return;
     const num = grid[row][col];
     if (num === 0 || calledNumbers.includes(num)) return;
+    pendingCallRef.current = true;
     callNumber(num);
   };
 
@@ -89,7 +98,6 @@ export default function GameBoard() {
                   key={c}
                   className={`grid-cell game-cell ${isMarked ? 'marked' : ''} ${canCall ? 'callable' : ''} ${inLine ? 'in-completed-line' : ''} ${isLastCalled ? 'last-called' : ''}`}
                   onClick={() => handleCellClick(r, c)}
-                  disabled={!canCall}
                 >
                   <span className="cell-number">{num}</span>
                   {isMarked && <span className="cell-strike">✕</span>}

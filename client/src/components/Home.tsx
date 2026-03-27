@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 
+// Wake up the server on first visit so the cold start happens while the user is on the home screen
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3001';
+fetch(`${serverUrl}/api/health`).catch(() => {});
+
 export default function Home() {
   const { state, dispatch, createRoom, joinRoom } = useGame();
   const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');

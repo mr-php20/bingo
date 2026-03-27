@@ -102,10 +102,12 @@ export function useGame() {
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
+      // Delta: offset from blank to the tile that should slide into it.
+      // ArrowUp = slide tile above blank down into it (blank moves up visually)
       const dirMap: Record<string, [number, number]> = {
-        ArrowUp: [1, 0], ArrowDown: [-1, 0], ArrowLeft: [0, 1], ArrowRight: [0, -1],
-        w: [1, 0], W: [1, 0], s: [-1, 0], S: [-1, 0],
-        a: [0, 1], A: [0, 1], d: [0, -1], D: [0, -1],
+        ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1],
+        w: [-1, 0], W: [-1, 0], s: [1, 0], S: [1, 0],
+        a: [0, -1], A: [0, -1], d: [0, 1], D: [0, 1],
       };
       const delta = dirMap[e.key];
       if (!delta) return;

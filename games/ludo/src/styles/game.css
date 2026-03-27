@@ -1,0 +1,117 @@
+.ludo-board-wrapper {
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+}
+
+.ludo-board {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.ludo-grid-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.ludo-token {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #fff;
+  transform: translate(-50%, -50%);
+  transition: left 0.3s ease, top 0.3s ease;
+  z-index: 2;
+  user-select: none;
+}
+
+.ludo-token.movable {
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  animation: tokenPulse 0.8s ease-in-out infinite;
+}
+
+.ludo-token.movable:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+  z-index: 10;
+}
+
+.ludo-token.finished {
+  opacity: 0.5;
+}
+
+@keyframes tokenPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 255, 255, 0.3); }
+  50% { box-shadow: 0 0 14px rgba(255, 255, 255, 0.7); }
+}
+
+.ludo-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dice-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.dice-area:hover {
+  border-color: var(--accent-1);
+}
+
+.dice-face {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.dice-placeholder {
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+}
+
+.dice-hint {
+  font-size: 0.65rem;
+  color: var(--accent-1);
+  font-weight: 600;
+}
+
+.rankings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  text-align: left;
+}
+
+.rankings-list li {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 0.3rem 0;
+}

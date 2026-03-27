@@ -1,0 +1,68 @@
+.gat-board-container {
+  display: flex;
+  justify-content: center;
+}
+
+.gat-board {
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  max-width: min(95vw, 400px);
+  height: auto;
+}
+
+.gat-edge {
+  stroke: var(--border-solid, #2a2d3e);
+  stroke-width: 1.5;
+}
+
+.gat-empty-point {
+  fill: var(--border-solid, #2a2d3e);
+}
+
+.gat-valid-dest {
+  fill: rgba(108, 92, 231, 0.2);
+  stroke: var(--accent-1);
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+  animation: destPulse 1s ease-in-out infinite;
+}
+
+@keyframes destPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.gat-tiger {
+  fill: #e17055;
+  stroke: #d63031;
+  stroke-width: 2;
+  transition: all 0.2s ease;
+}
+
+.gat-tiger.selected {
+  stroke: #fdcb6e;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px rgba(253, 203, 110, 0.6));
+}
+
+.gat-goat {
+  fill: #00cec9;
+  stroke: #00b894;
+  stroke-width: 2;
+  transition: all 0.2s ease;
+}
+
+.gat-goat.selected {
+  stroke: #fdcb6e;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px rgba(253, 203, 110, 0.6));
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

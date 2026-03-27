@@ -1,0 +1,112 @@
+.pallanguzhi-board {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: min(95vw, 520px);
+}
+
+.store {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  min-height: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'Sora', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+.store-p1 { color: var(--accent-1); }
+.store-p2 { color: var(--accent-2); }
+
+.pits-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pit-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.pit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  cursor: default;
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 4px;
+}
+
+.pit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.pit.pickable {
+  cursor: pointer;
+  border-color: var(--accent-1);
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.25);
+}
+
+.pit.pickable:hover {
+  background: rgba(108, 92, 231, 0.12);
+  transform: scale(1.08);
+}
+
+.pit.pickable:active {
+  transform: scale(0.95);
+}
+
+.pit.last-sown {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 12px rgba(0, 206, 201, 0.3);
+}
+
+.seed-count {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.pit-seeds-visual {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 36px;
+}
+
+.seed {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  flex-shrink: 0;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

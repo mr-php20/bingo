@@ -2,8 +2,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { registerSocketHandlers } from './socketHandlers.js';
-import { cleanupStaleRooms } from './roomManager.js';
+import { registerBingoHandlers, cleanupStaleRooms as cleanupBingoRooms } from './games/bingo/index.js';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
@@ -13,7 +12,7 @@ app.use(express.json());
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: Date.now() });
+  res.json({ status: 'ok', games: ['bingo'], timestamp: Date.now() });
 });
 
 const httpServer = createServer(app);
@@ -31,11 +30,14 @@ const io = new Server(httpServer, {
   pingInterval: 25000,
 });
 
-registerSocketHandlers(io);
+// Register game namespaces
+const bingoNsp = io.of('/bingo');
+registerBingoHandlers(bingoNsp);
 
 // Cleanup stale rooms every 30 minutes
-setInterval(cleanupStaleRooms, 30 * 60 * 1000);
+setInterval(cleanupBingoRooms, 30 * 60 * 1000);
 
 httpServer.listen(PORT, () => {
-  console.log(`Bingo server running on port ${PORT}`);
+  console.log(`Game server running on port ${PORT}`);
+  console.log(`  /bingo namespace active`);
 });

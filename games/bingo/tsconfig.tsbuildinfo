@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/gameboard.tsx","./src/components/gameover.tsx","./src/components/gridsetup.tsx","./src/components/home.tsx","./src/components/lobby.tsx","./src/context/gamecontext.tsx","./src/types/game.ts","./src/utils/bingo.ts"],"version":"5.9.3"}

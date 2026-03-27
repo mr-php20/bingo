@@ -38,6 +38,7 @@ export default function Home() {
 
   return (
     <div className="screen home-screen">
+      <a href="/" className="back-link">← Games</a>
       <div className="logo">
         <h1>BINGO</h1>
         <p className="subtitle">Indian Style</p>

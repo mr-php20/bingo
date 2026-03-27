@@ -1,0 +1,90 @@
+.snake-board {
+  display: grid;
+  gap: 1px;
+  padding: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: min(90vw, 400px);
+  aspect-ratio: 1;
+}
+
+.snake-cell {
+  background: var(--bg-card);
+  border-radius: 2px;
+}
+
+.snake-cell.body {
+  background: var(--accent-1);
+  border-radius: 3px;
+}
+
+.snake-cell.head {
+  background: var(--accent-2);
+  border-radius: 4px;
+  box-shadow: 0 0 6px rgba(0, 206, 201, 0.5);
+}
+
+.snake-cell.food {
+  background: var(--danger);
+  border-radius: 50%;
+  animation: popIn 0.3s ease;
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+}
+
+.snake-start-overlay {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.snake-start-overlay p {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+/* D-pad */
+.dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1.2rem;
+}
+
+.dpad-row {
+  display: flex;
+  gap: 4px;
+}
+
+.dpad-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dpad-btn:active {
+  background: var(--accent-1);
+  color: #fff;
+  transform: scale(0.95);
+}
+
+.dpad-row {
+  gap: 56px;
+}
+
+@media (min-width: 768px) {
+  .dpad { display: none; }
+}
+

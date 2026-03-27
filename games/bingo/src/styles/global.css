@@ -1,28 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+/* ===== Bingo — Game-Specific Overrides ===== */
+/* Base design tokens come from shared/theme.css */
 
-/* ===== Reset & Base ===== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+/* Bingo-specific variables */
 :root {
-  --bg: #0d1117;
-  --bg-card: #161b22;
-  --bg-cell: #1c2333;
-  --primary: #7c6ef0;
-  --primary-light: #a29bfe;
-  --secondary: #58d68d;
-  --accent: #e74c3c;
-  --text: #f0f0f0;
-  --text-dim: #8b949e;
-  --success: #2ecc71;
-  --danger: #e74c3c;
-  --warning: #f1c40f;
+  --bg-cell: var(--bg-secondary);
   --cell-size: min(15vw, 64px);
-  --radius: 12px;
-  --radius-sm: 8px;
 }
 
 html, body {
@@ -31,10 +13,6 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -51,6 +29,8 @@ body {
   justify-content: center;
   padding: 16px;
   overflow-y: auto;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* ===== Screens ===== */
@@ -61,20 +41,21 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  animation: fadeIn 0.3s ease;
+  animation: screenFadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
+@keyframes screenFadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== Home Screen ===== */
 .logo h1 {
+  font-family: 'Sora', sans-serif;
   font-size: 3.5rem;
   font-weight: 800;
   letter-spacing: 0.25em;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -83,7 +64,7 @@ body {
 
 .logo .subtitle {
   text-align: center;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-size: 1rem;
   margin-top: 4px;
   letter-spacing: 0.15em;
@@ -99,96 +80,34 @@ body {
 
 .join-link-info {
   text-align: center;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .join-link-info strong {
-  color: var(--primary-light);
+  color: var(--accent-1-light);
   letter-spacing: 0.15em;
 }
 
 /* ===== Inputs ===== */
 input[type="text"] {
-  width: 100%;
+  border-width: 2px;
   padding: 14px 18px;
-  border-radius: var(--radius);
-  border: 2px solid #333;
-  background: var(--bg-card);
-  color: var(--text);
-  font-size: 1rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
 }
 
-input[type="text"]:focus {
-  border-color: var(--primary);
-}
-
-input[type="text"]::placeholder {
-  color: var(--text-dim);
-}
-
-/* ===== Buttons ===== */
+/* ===== Buttons (extend shared .btn) ===== */
 .btn {
   padding: 14px 24px;
-  border: none;
-  border-radius: var(--radius);
   font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-  touch-action: manipulation;
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), #5a4bd1);
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
-}
-
-.btn-secondary {
-  background: var(--bg-card);
-  color: var(--text);
-  border: 2px solid #333;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  border-color: var(--primary-light);
-}
-
-.btn-text {
-  background: none;
-  color: var(--text-dim);
-  padding: 10px;
-}
-
-.btn-text:hover {
-  color: var(--text);
 }
 
 .btn-small {
   padding: 8px 16px;
   font-size: 0.85rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   background: var(--bg-card);
-  color: var(--text);
-  border: 1px solid #333;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
 }
 
 .btn-start {
@@ -200,18 +119,19 @@ input[type="text"]::placeholder {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
 .info-text {
-  color: var(--text-dim);
+  color: var(--text-secondary);
   text-align: center;
   font-size: 0.95rem;
 }
 
 /* ===== Lobby ===== */
 .lobby-screen h2 {
+  font-family: 'Sora', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -224,10 +144,11 @@ input[type="text"]::placeholder {
 }
 
 .room-code {
+  font-family: 'Sora', sans-serif;
   font-size: 2.5rem;
   font-weight: 800;
   letter-spacing: 0.4em;
-  color: var(--secondary);
+  color: var(--accent-2);
   cursor: pointer;
   padding: 8px 16px;
   border-radius: var(--radius);
@@ -236,7 +157,7 @@ input[type="text"]::placeholder {
 }
 
 .room-code:hover {
-  background: #222;
+  background: var(--bg-card-hover);
 }
 
 .room-code-actions {
@@ -263,8 +184,8 @@ input[type="text"]::placeholder {
 }
 
 .player-tag.waiting {
-  color: var(--text-dim);
-  border: 2px dashed #333;
+  color: var(--text-secondary);
+  border: 2px dashed var(--border-solid);
   background: transparent;
 }
 
@@ -278,10 +199,10 @@ input[type="text"]::placeholder {
 .select-series {
   width: 100%;
   padding: 12px 16px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   background: var(--bg-card);
-  border: 2px solid #333;
-  color: var(--text);
+  border: 2px solid var(--border-solid);
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -294,7 +215,7 @@ input[type="text"]::placeholder {
 
 .select-series:focus {
   outline: none;
-  border-color: var(--primary);
+  border-color: var(--accent-1);
 }
 
 /* ===== Grid (shared) ===== */
@@ -319,7 +240,7 @@ input[type="text"]::placeholder {
   font-size: 1.2rem;
   font-weight: 700;
   font-family: inherit;
-  border: 2px solid #2d3748;
+  border: 2px solid var(--border-solid);
   cursor: pointer;
   transition: all 0.15s;
   position: relative;
@@ -328,11 +249,12 @@ input[type="text"]::placeholder {
 
 /* ===== Grid Setup ===== */
 .setup-screen h2 {
+  font-family: 'Sora', sans-serif;
   font-size: 1.4rem;
 }
 
 .setup-hint {
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   text-align: center;
   min-height: 1.4em;
@@ -340,7 +262,7 @@ input[type="text"]::placeholder {
 
 .setup-cell {
   background: var(--bg-cell);
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .setup-cell.empty {
@@ -350,17 +272,17 @@ input[type="text"]::placeholder {
 }
 
 .setup-cell.empty:hover:not(:disabled) {
-  border-color: var(--primary);
+  border-color: var(--accent-1);
   background: rgba(108, 92, 231, 0.1);
 }
 
 .setup-cell.filled {
-  border-color: var(--primary);
-  animation: popIn 0.2s ease;
+  border-color: var(--accent-1);
+  animation: bingoPop 0.2s ease;
 }
 
 .setup-cell.last-placed {
-  border-color: var(--accent);
+  border-color: var(--danger);
   box-shadow: 0 0 10px rgba(253, 121, 168, 0.3);
 }
 
@@ -369,7 +291,7 @@ input[type="text"]::placeholder {
   cursor: default;
 }
 
-@keyframes popIn {
+@keyframes bingoPop {
   0% { transform: scale(0.8); }
   60% { transform: scale(1.1); }
   100% { transform: scale(1); }
@@ -398,10 +320,10 @@ input[type="text"]::placeholder {
 }
 
 .next-badge {
-  background: var(--primary);
+  background: var(--accent-1);
   color: white;
   padding: 6px 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -417,13 +339,13 @@ input[type="text"]::placeholder {
 
 .round-info {
   font-size: 0.85rem;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
 .turn-indicator {
   padding: 8px 24px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill);
   font-weight: 700;
   font-size: 1rem;
 }
@@ -460,7 +382,7 @@ input[type="text"]::placeholder {
 
 .bingo-label {
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   min-width: 50px;
   text-align: right;
 }
@@ -475,12 +397,12 @@ input[type="text"]::placeholder {
   font-weight: 800;
   font-size: 0.9rem;
   background: var(--bg-card);
-  color: #555;
+  color: var(--text-muted);
   transition: all 0.3s;
 }
 
 .bingo-letter.lit {
-  background: var(--primary);
+  background: var(--accent-1);
   color: white;
   animation: letterPop 0.4s ease;
 }
@@ -499,7 +421,7 @@ input[type="text"]::placeholder {
   display: flex;
   gap: 16px;
   font-size: 0.85rem;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
 .mini-score {
@@ -511,36 +433,36 @@ input[type="text"]::placeholder {
 /* Game cells */
 .game-cell {
   background: var(--bg-cell);
-  color: var(--text);
-  border-color: #2d3748;
+  color: var(--text-primary);
+  border-color: var(--border-solid);
 }
 
 .game-cell.callable {
   border-color: var(--success);
   cursor: pointer;
-  background: rgba(46, 204, 113, 0.08);
+  background: rgba(0, 184, 148, 0.08);
 }
 
 .game-cell.callable:hover {
-  background: rgba(46, 204, 113, 0.2);
+  background: rgba(0, 184, 148, 0.2);
   transform: scale(1.05);
 }
 
 .game-cell.marked {
-  background: #2a2040;
-  border-color: #4a3f6b;
+  background: rgba(108, 92, 231, 0.12);
+  border-color: rgba(108, 92, 231, 0.3);
 }
 
 .game-cell.marked .cell-number {
   opacity: 0.35;
   text-decoration: line-through;
-  color: #9b8ec4;
+  color: var(--accent-1-light);
 }
 
 .cell-strike {
   position: absolute;
   font-size: 1.5rem;
-  color: var(--accent);
+  color: var(--danger);
   pointer-events: none;
 }
 
@@ -558,13 +480,13 @@ input[type="text"]::placeholder {
 
 /* Completed line cells */
 .game-cell.in-completed-line {
-  background: rgba(88, 214, 141, 0.15);
-  border-color: var(--secondary);
+  background: rgba(0, 206, 201, 0.15);
+  border-color: var(--accent-2);
 }
 
 .game-cell.in-completed-line .cell-number {
   opacity: 0.5;
-  color: var(--secondary);
+  color: var(--accent-2);
 }
 
 /* SVG line strike overlay */
@@ -584,7 +506,7 @@ input[type="text"]::placeholder {
 }
 
 .strike-line {
-  stroke: var(--accent);
+  stroke: var(--danger);
   stroke-width: 0.06;
   stroke-linecap: round;
   opacity: 0.8;
@@ -615,24 +537,24 @@ input[type="text"]::placeholder {
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   background: var(--bg-card);
-  border: 1px solid #333;
+  border: 1px solid var(--border-solid);
   transition: border-color 0.2s;
 }
 
 .toggle-label:hover {
-  border-color: var(--primary-light);
+  border-color: var(--accent-1-light);
 }
 
 .toggle-label input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--primary);
+  accent-color: var(--accent-1);
   cursor: pointer;
 }
 
 .toggle-text {
   font-size: 0.9rem;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 /* Called numbers */
@@ -663,11 +585,11 @@ input[type="text"]::placeholder {
   background: var(--bg-card);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
 .no-calls {
-  color: #555;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -677,6 +599,7 @@ input[type="text"]::placeholder {
 }
 
 .result-title {
+  font-family: 'Sora', sans-serif;
   font-size: 1.6rem;
   text-align: center;
 }
@@ -728,7 +651,7 @@ input[type="text"]::placeholder {
 }
 
 .round-detail {
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
@@ -745,23 +668,27 @@ input[type="text"]::placeholder {
   padding: 20px 32px;
   border-radius: var(--radius);
   background: var(--bg-card);
-  border: 2px solid #333;
+  border: 2px solid var(--border-solid);
 }
 
 .score-card.me {
-  border-color: var(--primary);
+  border-color: var(--accent-1);
 }
 
 .score-name {
   font-size: 0.9rem;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
 .score-value {
+  font-family: 'Sora', sans-serif;
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--text);
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .gameover-actions {

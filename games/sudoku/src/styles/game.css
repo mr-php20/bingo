@@ -1,0 +1,111 @@
+.difficulty-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.diff-btn {
+  font-size: 0.75rem;
+  padding: 0.4rem 1rem;
+}
+
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  width: min(90vw, 400px);
+  aspect-ratio: 1;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 2px solid var(--accent-1);
+  overflow: hidden;
+}
+
+.sudoku-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s ease;
+}
+
+.sudoku-cell.clue {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.sudoku-cell.editable {
+  color: var(--accent-2);
+}
+
+.sudoku-cell.highlight {
+  background: var(--bg-card-hover);
+}
+
+.sudoku-cell.selected {
+  background: rgba(108, 92, 231, 0.25);
+  border-color: var(--accent-1);
+}
+
+.sudoku-cell.same-num {
+  background: rgba(108, 92, 231, 0.15);
+}
+
+.sudoku-cell.error {
+  color: var(--danger);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.sudoku-cell.box-right {
+  border-right: 2px solid var(--accent-1);
+}
+
+.sudoku-cell.box-bottom {
+  border-bottom: 2px solid var(--accent-1);
+}
+
+.number-pad {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 1rem;
+  max-width: 400px;
+}
+
+.numpad-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.numpad-btn:active {
+  background: var(--accent-1);
+  color: #fff;
+  transform: scale(0.95);
+}
+
+.erase-btn {
+  font-size: 1.1rem;
+}
+
+
+@media (max-width: 380px) {
+  .sudoku-cell { font-size: 0.9rem; }
+  .numpad-btn { width: 34px; height: 34px; font-size: 0.9rem; }
+}

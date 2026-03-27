@@ -305,7 +305,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3001';
-    const socket = io(serverUrl, {
+    const socket = io(`${serverUrl}/bingo`, {
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 10,

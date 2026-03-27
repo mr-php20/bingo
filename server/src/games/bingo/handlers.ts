@@ -1,4 +1,4 @@
-import type { Server, Socket } from 'socket.io';
+import type { Server, Socket, Namespace } from 'socket.io';
 import {
   createRoom,
   joinRoom,
@@ -8,7 +8,7 @@ import {
   setHideOpponentStatus,
   setRoomPhase,
   getPlayersArray,
-} from './roomManager.js';
+} from './rooms.js';
 import {
   submitGrid,
   callNumber,
@@ -16,11 +16,11 @@ import {
   nextRound,
   resetSeries,
   continueGame,
-} from './gameEngine.js';
+} from './engine.js';
 
-export function registerSocketHandlers(io: Server): void {
-  io.on('connection', (socket: Socket) => {
-    console.log(`[connect] ${socket.id}`);
+export function registerBingoHandlers(nsp: Namespace): void {
+  nsp.on('connection', (socket: Socket) => {
+    console.log(`[bingo][connect] ${socket.id}`);
 
     // ---- CREATE ROOM ----
     socket.on('create-room', ({ playerName }: { playerName: string }) => {
@@ -79,7 +79,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
         setSeriesConfig(room.code, bestOf);
-        io.to(room.code).emit('series-updated', { bestOf });
+        nsp.to(room.code).emit('series-updated', { bestOf });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -96,7 +96,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
         setHideOpponentStatus(room.code, !!hide);
-        io.to(room.code).emit('hide-opponent-updated', { hide: !!hide });
+        nsp.to(room.code).emit('hide-opponent-updated', { hide: !!hide });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -117,7 +117,7 @@ export function registerSocketHandlers(io: Server): void {
           return;
         }
         setRoomPhase(room.code, 'setup');
-        io.to(room.code).emit('game-start', { phase: 'setup' });
+        nsp.to(room.code).emit('game-start', { phase: 'setup' });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -140,7 +140,7 @@ export function registerSocketHandlers(io: Server): void {
         socket.to(room.code).emit('opponent-ready');
 
         if (bothReady) {
-          io.to(room.code).emit('grids-ready', {
+          nsp.to(room.code).emit('grids-ready', {
             currentTurn: room.roundState!.currentTurn,
           });
         }
@@ -163,7 +163,7 @@ export function registerSocketHandlers(io: Server): void {
 
         const callResult = callNumber(room, player.id, number);
 
-        io.to(room.code).emit('number-called', {
+        nsp.to(room.code).emit('number-called', {
           number,
           calledBy: player.id,
           players: callResult.players,
@@ -180,7 +180,7 @@ export function registerSocketHandlers(io: Server): void {
             score,
           }));
 
-          io.to(room.code).emit('round-won', {
+          nsp.to(room.code).emit('round-won', {
             winnerId: callResult.winner,
             winnerName: winnerPlayer?.name ?? 'Unknown',
             scores,
@@ -206,7 +206,7 @@ export function registerSocketHandlers(io: Server): void {
         }
 
         nextRound(room);
-        io.to(room.code).emit('game-start', { phase: 'setup' });
+        nsp.to(room.code).emit('game-start', { phase: 'setup' });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -225,7 +225,7 @@ export function registerSocketHandlers(io: Server): void {
         }
 
         resetSeries(room);
-        io.to(room.code).emit('game-start', { phase: 'setup' });
+        nsp.to(room.code).emit('game-start', { phase: 'setup' });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -244,7 +244,7 @@ export function registerSocketHandlers(io: Server): void {
         }
 
         continueGame(room);
-        io.to(room.code).emit('game-start', { phase: 'setup' });
+        nsp.to(room.code).emit('game-start', { phase: 'setup' });
       } catch (err: unknown) {
         socket.emit('error', { message: (err as Error).message });
       }
@@ -252,12 +252,12 @@ export function registerSocketHandlers(io: Server): void {
 
     // ---- DISCONNECT ----
     socket.on('disconnect', () => {
-      console.log(`[disconnect] ${socket.id}`);
+      console.log(`[bingo][disconnect] ${socket.id}`);
       const result = removePlayer(socket.id);
       if (result) {
         const { room, player } = result;
         if (room.players.size > 0) {
-          io.to(room.code).emit('player-left', {
+          nsp.to(room.code).emit('player-left', {
             playerId: player.id,
             playerName: player.name,
           });

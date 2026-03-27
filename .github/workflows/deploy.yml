@@ -17,49 +17,69 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./client
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: client/package-lock.json
 
-      - run: npm ci
-
-      - name: Build
+      - name: Build Bingo
+        working-directory: ./games/bingo
         env:
           GITHUB_PAGES: 'true'
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
-        run: npm run build
-
-      - name: Restructure for /bingo/ subpath
         run: |
-          mkdir -p dist-pages/bingo
-          cp -r dist/* dist-pages/bingo/
+          npm ci
+          npm run build
+
+      - name: Build 2048
+        working-directory: ./games/2048
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build Snake
+        working-directory: ./games/snake
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build Sudoku
+        working-directory: ./games/sudoku
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build Sliding Puzzle
+        working-directory: ./games/sliding-puzzle
+        env:
+          GITHUB_PAGES: 'true'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Assemble dist-pages
+        run: |
+          mkdir -p dist-pages/bingo dist-pages/2048 dist-pages/snake dist-pages/sudoku dist-pages/slides
+          cp -r games/bingo/dist/* dist-pages/bingo/
+          cp -r games/2048/dist/* dist-pages/2048/
+          cp -r games/snake/dist/* dist-pages/snake/
+          cp -r games/sudoku/dist/* dist-pages/sudoku/
+          cp -r games/sliding-puzzle/dist/* dist-pages/slides/
+          cp landing/index.html dist-pages/index.html
           echo 'games.arivalan.in' > dist-pages/CNAME
-          cat > dist-pages/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="refresh" content="0;url=/bingo/">
-            <title>Redirecting…</title>
-          </head>
-          <body>
-            <p>Redirecting to <a href="/bingo/">Bingo</a>…</p>
-          </body>
-          </html>
-          EOF
-          cp dist-pages/bingo/404.html dist-pages/404.html 2>/dev/null || cp dist-pages/index.html dist-pages/404.html
+          cp dist-pages/index.html dist-pages/404.html
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: client/dist-pages
+          path: dist-pages
 
   deploy:
     needs: build

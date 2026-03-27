@@ -1,5 +1,5 @@
 import type { Room, Player, RoundState } from './types.js';
-import { resetPlayerState } from './roomManager.js';
+import { resetPlayerState } from './rooms.js';
 
 const GRID_SIZE = 5;
 const TOTAL_NUMBERS = 25;

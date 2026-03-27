@@ -66,6 +66,8 @@ jobs:
           npm run build
 
       - name: Assemble dist-pages
+        env:
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
         run: |
           mkdir -p dist-pages/bingo dist-pages/2048 dist-pages/snake dist-pages/sudoku dist-pages/slides
           cp -r games/bingo/dist/* dist-pages/bingo/
@@ -74,6 +76,7 @@ jobs:
           cp -r games/sudoku/dist/* dist-pages/sudoku/
           cp -r games/sliding-puzzle/dist/* dist-pages/slides/
           cp landing/index.html dist-pages/index.html
+          sed -i "s|__SERVER_URL__|$VITE_SERVER_URL|g" dist-pages/index.html
           echo 'games.arivalan.in' > dist-pages/CNAME
           cp dist-pages/index.html dist-pages/404.html
 

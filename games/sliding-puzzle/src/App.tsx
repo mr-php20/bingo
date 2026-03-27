@@ -72,7 +72,7 @@ export default function App() {
         })}
       </div>
 
-      <p className="hint-text">Click a tile next to the empty space to slide it</p>
+      <p className="hint-text">Click, use arrow keys, or WASD to slide tiles</p>
 
       {won && (
         <div className="game-over-overlay">

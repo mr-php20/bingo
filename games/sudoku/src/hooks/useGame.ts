@@ -97,19 +97,19 @@ export function useGame() {
       } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
         e.preventDefault();
         eraseCell();
-      } else if (e.key === 'ArrowUp' && state.selected) {
+      } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && state.selected) {
         e.preventDefault();
         const [r, c] = state.selected;
         if (r > 0) selectCell(r - 1, c);
-      } else if (e.key === 'ArrowDown' && state.selected) {
+      } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && state.selected) {
         e.preventDefault();
         const [r, c] = state.selected;
         if (r < 8) selectCell(r + 1, c);
-      } else if (e.key === 'ArrowLeft' && state.selected) {
+      } else if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && state.selected) {
         e.preventDefault();
         const [r, c] = state.selected;
         if (c > 0) selectCell(r, c - 1);
-      } else if (e.key === 'ArrowRight' && state.selected) {
+      } else if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && state.selected) {
         e.preventDefault();
         const [r, c] = state.selected;
         if (c < 8) selectCell(r, c + 1);

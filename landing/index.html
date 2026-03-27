@@ -158,5 +158,12 @@
   </div>
 
   <p class="footer">Built by <a href="https://arivalan.in">Arivalan</a></p>
+  <script>
+    // Wake up the Bingo server so cold start happens while user browses
+    var serverUrl = '__SERVER_URL__';
+    if (serverUrl && !serverUrl.startsWith('__')) {
+      fetch(serverUrl + '/api/health').catch(function() {});
+    }
+  </script>
 </body>
 </html>

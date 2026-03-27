@@ -96,5 +96,33 @@ export function useGame() {
     });
   }, []);
 
+  // Keyboard: arrow keys + WASD move the tile adjacent to the blank in the pressed direction
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const dirMap: Record<string, [number, number]> = {
+        ArrowUp: [1, 0], ArrowDown: [-1, 0], ArrowLeft: [0, 1], ArrowRight: [0, -1],
+        w: [1, 0], W: [1, 0], s: [-1, 0], S: [-1, 0],
+        a: [0, 1], A: [0, 1], d: [0, -1], D: [0, -1],
+      };
+      const delta = dirMap[e.key];
+      if (!delta) return;
+      e.preventDefault();
+
+      const board = stateRef.current.board;
+      const blankIdx = board.indexOf(null);
+      const blankRow = Math.floor(blankIdx / 4);
+      const blankCol = blankIdx % 4;
+      const srcRow = blankRow + delta[0];
+      const srcCol = blankCol + delta[1];
+      if (srcRow < 0 || srcRow > 3 || srcCol < 0 || srcCol > 3) return;
+      handleTileClick(srcRow * 4 + srcCol);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [handleTileClick]);
+
   return { ...state, newGame, handleTileClick, canMoveTile: (i: number) => canMoveTile(state.board, i) };
 }

@@ -1,12 +1,21 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Board, shuffleBoard, moveTile, canMoveTile, isSolved } from '../utils/game';
 
+export interface LastMove {
+  value: number;
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+}
+
 interface GameState {
   board: Board;
   moves: number;
   timer: number;
   bestTime: number | null;
   won: boolean;
+  lastMove: LastMove | null;
 }
 
 const BEST_KEY = 'sliding-puzzle-best';
@@ -23,6 +32,7 @@ export function useGame() {
     timer: 0,
     bestTime: loadBest(),
     won: false,
+    lastMove: null,
   }));
 
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -45,6 +55,7 @@ export function useGame() {
       timer: 0,
       bestTime: prev.bestTime,
       won: false,
+      lastMove: null,
     }));
   }, []);
 
@@ -53,9 +64,17 @@ export function useGame() {
       if (prev.won) return prev;
       if (!canMoveTile(prev.board, index)) return prev;
 
+      const tileValue = prev.board[index]!;
+      const fromRow = Math.floor(index / 4);
+      const fromCol = index % 4;
+
       const newBoard = moveTile(prev.board, index);
       const newMoves = prev.moves + 1;
       const won = isSolved(newBoard);
+
+      const newIndex = newBoard.indexOf(tileValue);
+      const toRow = Math.floor(newIndex / 4);
+      const toCol = newIndex % 4;
 
       let bestTime = prev.bestTime;
       if (won) {
@@ -66,7 +85,14 @@ export function useGame() {
         }
       }
 
-      return { ...prev, board: newBoard, moves: newMoves, won, bestTime };
+      return {
+        ...prev,
+        board: newBoard,
+        moves: newMoves,
+        won,
+        bestTime,
+        lastMove: { value: tileValue, fromRow, fromCol, toRow, toCol },
+      };
     });
   }, []);
 

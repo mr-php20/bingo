@@ -1,6 +1,7 @@
 .board-2048 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   gap: 8px;
   padding: 8px;
   background: var(--bg-secondary);
@@ -8,9 +9,18 @@
   border: 1px solid var(--border);
   width: min(90vw, 400px);
   aspect-ratio: 1;
+  position: relative;
 }
 
-.cell-2048 {
+/* Background grid cells */
+.cell-bg {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* Animated tiles — placed on the same grid, stacked on top of backgrounds */
+.tile-2048 {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,17 +28,51 @@
   font-family: 'Sora', sans-serif;
   font-weight: 800;
   color: #fff;
-  transition: background-color 0.15s ease;
   user-select: none;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.cell-2048.empty {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+/* Slide animation: tile starts at previous position (via transform) and transitions to current */
+.tile-moving {
+  animation: tileSlide 0.12s ease-out;
 }
 
-.cell-2048.filled {
-  animation: popIn 0.15s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+@keyframes tileSlide {
+  from {
+    transform: translate(
+      calc(var(--from-col) * (100% + 8px)),
+      calc(var(--from-row) * (100% + 8px))
+    );
+  }
+  to {
+    transform: translate(0, 0);
+  }
 }
 
+/* New tile: scale up from nothing */
+.tile-new {
+  animation: tileAppear 0.15s ease 0.08s both;
+}
+
+@keyframes tileAppear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Merged tile: pop effect */
+.tile-merged {
+  animation: tileMerge 0.2s ease;
+}
+
+@keyframes tileMerge {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

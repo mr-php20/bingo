@@ -1,93 +1,166 @@
 export type Grid = number[][];
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
+export interface TileData {
+  id: number;
+  value: number;
+  row: number;
+  col: number;
+  prevRow: number;
+  prevCol: number;
+  isNew: boolean;
+  isMerged: boolean;
+}
+
+let nextTileId = 1;
+
 export function createEmptyGrid(): Grid {
   return Array.from({ length: 4 }, () => Array(4).fill(0));
 }
 
-export function addRandomTile(grid: Grid): Grid {
+export interface MoveResult {
+  grid: Grid;
+  tiles: TileData[];
+  score: number;
+  moved: boolean;
+}
+
+export function initGame(): { grid: Grid; tiles: TileData[] } {
+  nextTileId = 1;
+  const grid = createEmptyGrid();
+  const tiles: TileData[] = [];
+  addTile(grid, tiles);
+  addTile(grid, tiles);
+  return { grid, tiles };
+}
+
+function addTile(grid: Grid, tiles: TileData[]): void {
   const empty: [number, number][] = [];
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       if (grid[r][c] === 0) empty.push([r, c]);
     }
   }
-  if (empty.length === 0) return grid;
+  if (empty.length === 0) return;
   const [r, c] = empty[Math.floor(Math.random() * empty.length)];
-  const next = grid.map(row => [...row]);
-  next[r][c] = Math.random() < 0.9 ? 2 : 4;
-  return next;
+  const value = Math.random() < 0.9 ? 2 : 4;
+  grid[r][c] = value;
+  tiles.push({
+    id: nextTileId++,
+    value,
+    row: r,
+    col: c,
+    prevRow: r,
+    prevCol: c,
+    isNew: true,
+    isMerged: false,
+  });
 }
 
-export function initGrid(): Grid {
-  return addRandomTile(addRandomTile(createEmptyGrid()));
-}
-
-function slideRow(row: number[]): { result: number[]; score: number } {
-  const filtered = row.filter(v => v !== 0);
-  const result: number[] = [];
+function slideLine(line: number[]): {
+  line: number[];
+  moves: { from: number; to: number; merged: boolean }[];
+  score: number;
+} {
+  const moves: { from: number; to: number; merged: boolean }[] = [];
+  const result = [0, 0, 0, 0];
   let score = 0;
+  let writeIdx = 0;
+
+  const nonZero: { val: number; idx: number }[] = [];
+  for (let i = 0; i < 4; i++) {
+    if (line[i] !== 0) nonZero.push({ val: line[i], idx: i });
+  }
+
   let i = 0;
-  while (i < filtered.length) {
-    if (i + 1 < filtered.length && filtered[i] === filtered[i + 1]) {
-      const merged = filtered[i] * 2;
-      result.push(merged);
+  while (i < nonZero.length) {
+    if (i + 1 < nonZero.length && nonZero[i].val === nonZero[i + 1].val) {
+      const merged = nonZero[i].val * 2;
+      result[writeIdx] = merged;
       score += merged;
+      moves.push({ from: nonZero[i].idx, to: writeIdx, merged: false });
+      moves.push({ from: nonZero[i + 1].idx, to: writeIdx, merged: true });
+      writeIdx++;
       i += 2;
     } else {
-      result.push(filtered[i]);
+      result[writeIdx] = nonZero[i].val;
+      moves.push({ from: nonZero[i].idx, to: writeIdx, merged: false });
+      writeIdx++;
       i++;
     }
   }
-  while (result.length < 4) result.push(0);
-  return { result, score };
+
+  return { line: result, moves, score };
 }
 
-function rotateGrid(grid: Grid): Grid {
-  const n = grid.length;
-  const rotated = createEmptyGrid();
-  for (let r = 0; r < n; r++) {
-    for (let c = 0; c < n; c++) {
-      rotated[c][n - 1 - r] = grid[r][c];
-    }
-  }
-  return rotated;
-}
-
-export function move(grid: Grid, direction: Direction): { grid: Grid; score: number; moved: boolean } {
-  let g = grid.map(row => [...row]);
-  let rotations = 0;
-
-  switch (direction) {
-    case 'left': rotations = 0; break;
-    case 'down': rotations = 1; break;
-    case 'right': rotations = 2; break;
-    case 'up': rotations = 3; break;
+export function move(grid: Grid, tiles: TileData[], direction: Direction): MoveResult {
+  const tileMap = new Map<string, TileData>();
+  for (const t of tiles) {
+    tileMap.set(`${t.row},${t.col}`, { ...t, isNew: false, isMerged: false, prevRow: t.row, prevCol: t.col });
   }
 
-  for (let i = 0; i < rotations; i++) g = rotateGrid(g);
-
+  const newGrid = createEmptyGrid();
+  const newTiles: TileData[] = [];
   let totalScore = 0;
-  const newGrid = g.map(row => {
-    const { result, score } = slideRow(row);
-    totalScore += score;
-    return result;
-  });
+  let moved = false;
 
-  let result = newGrid;
-  for (let i = 0; i < (4 - rotations) % 4; i++) result = rotateGrid(result);
+  for (let lineIdx = 0; lineIdx < 4; lineIdx++) {
+    const line: number[] = [];
+    const coords: [number, number][] = [];
 
-  const moved = !gridsEqual(grid, result);
-  return { grid: result, score: totalScore, moved };
-}
+    for (let pos = 0; pos < 4; pos++) {
+      let r: number, c: number;
+      switch (direction) {
+        case 'left':  r = lineIdx; c = pos; break;
+        case 'right': r = lineIdx; c = 3 - pos; break;
+        case 'up':    r = pos; c = lineIdx; break;
+        case 'down':  r = 3 - pos; c = lineIdx; break;
+      }
+      line.push(grid[r][c]);
+      coords.push([r, c]);
+    }
 
-function gridsEqual(a: Grid, b: Grid): boolean {
-  for (let r = 0; r < 4; r++) {
-    for (let c = 0; c < 4; c++) {
-      if (a[r][c] !== b[r][c]) return false;
+    const result = slideLine(line);
+    totalScore += result.score;
+
+    for (const m of result.moves) {
+      const [fromR, fromC] = coords[m.from];
+      const [toR, toC] = coords[m.to];
+      const tile = tileMap.get(`${fromR},${fromC}`);
+      if (!tile) continue;
+
+      if (fromR !== toR || fromC !== toC) moved = true;
+
+      if (m.merged) {
+        // Second tile in a merge — find the winner tile already placed at destination
+        const existing = newTiles.find(t => t.row === toR && t.col === toC);
+        if (existing) {
+          existing.value = result.line[m.to];
+          existing.isMerged = true;
+        }
+      } else {
+        newTiles.push({
+          ...tile,
+          row: toR,
+          col: toC,
+          prevRow: fromR,
+          prevCol: fromC,
+        });
+      }
+    }
+
+    for (let pos = 0; pos < 4; pos++) {
+      const [r, c] = coords[pos];
+      newGrid[r][c] = result.line[pos];
     }
   }
-  return true;
+
+  if (!moved) {
+    return { grid, tiles: tiles.map(t => ({ ...t, isNew: false, isMerged: false })), score: 0, moved: false };
+  }
+
+  addTile(newGrid, newTiles);
+  return { grid: newGrid, tiles: newTiles, score: totalScore, moved: true };
 }
 
 export function canMove(grid: Grid): boolean {

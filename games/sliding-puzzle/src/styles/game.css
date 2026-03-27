@@ -1,6 +1,7 @@
 .puzzle-board {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
   gap: 6px;
   padding: 6px;
   background: var(--bg-secondary);
@@ -8,6 +9,14 @@
   border: 1px solid var(--border);
   width: min(90vw, 400px);
   aspect-ratio: 1;
+  position: relative;
+}
+
+.puzzle-cell-bg {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  opacity: 0.4;
 }
 
 .puzzle-tile {
@@ -22,12 +31,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   user-select: none;
-  transition: all 0.15s ease;
-}
-
-.puzzle-tile.empty {
-  background: transparent;
-  border-color: transparent;
+  z-index: 1;
 }
 
 .puzzle-tile.movable {
@@ -47,5 +51,22 @@
 
 .puzzle-tile.correct {
   color: var(--accent-2);
+}
+
+/* Slide animation: tile starts at previous position and slides to current */
+.puzzle-tile.tile-sliding {
+  animation: puzzleSlide 0.15s ease-out;
+}
+
+@keyframes puzzleSlide {
+  from {
+    transform: translate(
+      calc(var(--from-col) * (100% + 6px)),
+      calc(var(--from-row) * (100% + 6px))
+    );
+  }
+  to {
+    transform: translate(0, 0);
+  }
 }
 

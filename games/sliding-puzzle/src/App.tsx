@@ -7,7 +7,12 @@ function formatTime(s: number): string {
 }
 
 export default function App() {
-  const { board, moves, timer, bestTime, won, newGame, handleTileClick, canMoveTile } = useGame();
+  const { board, moves, timer, bestTime, won, lastMove, newGame, handleTileClick, canMoveTile } = useGame();
+
+  // Build tile list: for each non-null value, compute its row/col from the board array
+  const tiles = board
+    .map((val, idx) => ({ val, row: Math.floor(idx / 4), col: idx % 4, idx }))
+    .filter((t): t is { val: number; row: number; col: number; idx: number } => t.val !== null);
 
   return (
     <div className="game-app">
@@ -35,20 +40,36 @@ export default function App() {
       </div>
 
       <div className="puzzle-board">
-        {board.map((val, i) => (
-          <div
-            key={i}
-            className={[
-              'puzzle-tile',
-              val === null ? 'empty' : '',
-              val !== null && canMoveTile(i) ? 'movable' : '',
-              val !== null && val === i + 1 ? 'correct' : '',
-            ].filter(Boolean).join(' ')}
-            onClick={() => val !== null && handleTileClick(i)}
-          >
-            {val}
-          </div>
+        {/* Background cells */}
+        {Array.from({ length: 16 }, (_, i) => (
+          <div key={`bg-${i}`} className="puzzle-cell-bg" />
         ))}
+        {/* Animated tiles keyed by value so they persist across moves */}
+        {tiles.map(t => {
+          const isLastMoved = lastMove !== null && lastMove.value === t.val;
+          const style: React.CSSProperties = {
+            gridRow: t.row + 1,
+            gridColumn: t.col + 1,
+            '--from-row': isLastMoved ? lastMove.fromRow - lastMove.toRow : 0,
+            '--from-col': isLastMoved ? lastMove.fromCol - lastMove.toCol : 0,
+          } as React.CSSProperties;
+
+          return (
+            <div
+              key={isLastMoved ? `${t.val}-${moves}` : t.val}
+              className={[
+                'puzzle-tile',
+                canMoveTile(t.idx) ? 'movable' : '',
+                t.val === t.idx + 1 ? 'correct' : '',
+                isLastMoved ? 'tile-sliding' : '',
+              ].filter(Boolean).join(' ')}
+              style={style}
+              onClick={() => handleTileClick(t.idx)}
+            >
+              {t.val}
+            </div>
+          );
+        })}
       </div>
 
       <p className="hint-text">Click a tile next to the empty space to slide it</p>

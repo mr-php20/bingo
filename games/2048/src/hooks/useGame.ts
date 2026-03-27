@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Grid, Direction, initGrid, move, addRandomTile, canMove, hasWon } from '../utils/game';
+import { Grid, TileData, Direction, initGame, move, canMove, hasWon } from '../utils/game';
 
 interface GameState {
   grid: Grid;
+  tiles: TileData[];
   score: number;
   bestScore: number;
   gameOver: boolean;
@@ -18,21 +19,19 @@ function loadBest(): number {
 }
 
 export function useGame() {
-  const [state, setState] = useState<GameState>(() => ({
-    grid: initGrid(),
-    score: 0,
-    bestScore: loadBest(),
-    gameOver: false,
-    won: false,
-    keepPlaying: false,
-  }));
+  const [state, setState] = useState<GameState>(() => {
+    const { grid, tiles } = initGame();
+    return { grid, tiles, score: 0, bestScore: loadBest(), gameOver: false, won: false, keepPlaying: false };
+  });
 
   const stateRef = useRef(state);
   stateRef.current = state;
 
   const newGame = useCallback(() => {
+    const { grid, tiles } = initGame();
     setState(prev => ({
-      grid: initGrid(),
+      grid,
+      tiles,
       score: 0,
       bestScore: prev.bestScore,
       gameOver: false,
@@ -45,21 +44,21 @@ export function useGame() {
     setState(prev => {
       if (prev.gameOver || (prev.won && !prev.keepPlaying)) return prev;
 
-      const result = move(prev.grid, direction);
+      const result = move(prev.grid, prev.tiles, direction);
       if (!result.moved) return prev;
 
-      const newGrid = addRandomTile(result.grid);
       const newScore = prev.score + result.score;
       const newBest = Math.max(newScore, prev.bestScore);
-      const won = !prev.keepPlaying && hasWon(newGrid);
-      const gameOver = !won && !canMove(newGrid);
+      const won = !prev.keepPlaying && hasWon(result.grid);
+      const gameOver = !won && !canMove(result.grid);
 
       if (newBest > prev.bestScore) {
         localStorage.setItem(BEST_KEY, String(newBest));
       }
 
       return {
-        grid: newGrid,
+        grid: result.grid,
+        tiles: result.tiles,
         score: newScore,
         bestScore: newBest,
         gameOver,
@@ -69,11 +68,11 @@ export function useGame() {
     });
   }, []);
 
-  const keepPlaying = useCallback(() => {
+  const handleKeepPlaying = useCallback(() => {
     setState(prev => ({ ...prev, won: false, keepPlaying: true }));
   }, []);
 
-  // Keyboard controls
+  // Keyboard
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       const map: Record<string, Direction> = {
@@ -91,7 +90,7 @@ export function useGame() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleMove]);
 
-  // Touch/swipe controls
+  // Touch/swipe
   useEffect(() => {
     let startX = 0, startY = 0;
     const onStart = (e: TouchEvent) => {
@@ -101,10 +100,8 @@ export function useGame() {
     const onEnd = (e: TouchEvent) => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
-      if (Math.max(absDx, absDy) < 30) return;
-      if (absDx > absDy) {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
+      if (Math.abs(dx) > Math.abs(dy)) {
         handleMove(dx > 0 ? 'right' : 'left');
       } else {
         handleMove(dy > 0 ? 'down' : 'up');
@@ -118,5 +115,5 @@ export function useGame() {
     };
   }, [handleMove]);
 
-  return { ...state, newGame, handleMove, keepPlaying };
+  return { ...state, newGame, handleMove, keepPlaying: handleKeepPlaying };
 }

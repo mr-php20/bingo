@@ -10,4 +10,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: CLIENT_ORIGIN
-        sync: false # Set this manually to your GitHub Pages URL
+        sync: false # Set to: https://games.arivalan.in,https://mr-php20.github.io

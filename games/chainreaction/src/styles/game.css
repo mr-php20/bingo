@@ -1,5 +1,42 @@
 /* ===== Chain Reaction Game ===== */
 
+/* Player count selector for Pass & Play */
+.cr-player-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cr-count-selector {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.cr-count-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cr-count-btn:hover {
+  border-color: var(--accent-1);
+  color: var(--text-primary);
+}
+
+.cr-count-btn.selected {
+  background: var(--accent-1);
+  border-color: var(--accent-1);
+  color: #fff;
+}
+
 /* Player indicator bar */
 .cr-players-bar {
   display: flex;

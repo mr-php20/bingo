@@ -1,8 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGame } from './hooks/useGame';
+import { useLocalGame } from './hooks/useLocalGame';
 
 export default function App() {
-  const game = useGame();
+  const onlineGame = useGame();
+  const localGame = useLocalGame();
+  const [isLocal, setIsLocal] = useState(false);
+  const game = isLocal ? localGame : onlineGame;
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');
@@ -22,12 +26,17 @@ export default function App() {
 
   const handleCreate = () => {
     if (nameTooShort) return;
-    game.createRoom(name.trim());
+    onlineGame.createRoom(name.trim());
   };
 
   const handleJoin = () => {
     if (nameTooShort || !code.trim()) return;
-    game.joinRoom(name.trim(), code.trim());
+    onlineGame.joinRoom(name.trim(), code.trim());
+  };
+
+  const handlePassAndPlay = () => {
+    setIsLocal(true);
+    localGame.startLocal();
   };
 
   const handleCopy = useCallback(async () => {
@@ -70,6 +79,8 @@ export default function App() {
             <button className="btn btn-secondary" onClick={() => { if (!nameTooShort) setMode('join'); }} disabled={nameTooShort}>
               Join Game
             </button>
+            <div className="divider"><span>or</span></div>
+            <button className="btn btn-secondary" onClick={handlePassAndPlay}>Pass & Play</button>
           </div>
         )}
 
@@ -171,7 +182,9 @@ export default function App() {
   }
 
   // ── Playing / Game Over ──
-  const opponent = game.players.find(p => p.id !== game.playerId);
+  const opponent = isLocal
+    ? game.players.find(p => p.id !== game.playerId)
+    : game.players.find(p => p.id !== game.playerId);
 
   return (
     <div className="game-app">
@@ -182,20 +195,20 @@ export default function App() {
       </div>
 
       <div className="score-bar">
-        <div className="score-box">
-          <span className="label">You ({game.myMark})</span>
-          <span className="value">{game.scores.find(s => s.id === game.playerId)?.score ?? 0}</span>
+        <div className={`score-box ${isLocal && (game as any).currentMark === 'X' && game.screen === 'playing' ? 'active-turn' : ''}`}>
+          <span className="label">{isLocal ? 'Player X' : `You (${game.myMark})`}</span>
+          <span className="value">{game.scores.find(s => s.id === (isLocal ? 'x' : game.playerId))?.score ?? 0}</span>
         </div>
-        <div className="score-box">
-          <span className="label">{opponent?.name ?? 'Opponent'}</span>
-          <span className="value">{game.scores.find(s => s.id !== game.playerId)?.score ?? 0}</span>
+        <div className={`score-box ${isLocal && (game as any).currentMark === 'O' && game.screen === 'playing' ? 'active-turn' : ''}`}>
+          <span className="label">{isLocal ? 'Player O' : (opponent?.name ?? 'Opponent')}</span>
+          <span className="value">{game.scores.find(s => s.id === (isLocal ? 'o' : opponent?.id))?.score ?? 0}</span>
         </div>
       </div>
 
       <p className="hint-text" style={{ marginBottom: '0.5rem' }}>
         {game.screen === 'game-over'
-          ? game.isDraw ? "It's a draw!" : game.winnerId === game.playerId ? '🎉 You win!' : `${game.winnerName} wins!`
-          : game.isMyTurn ? 'Your turn' : `${opponent?.name ?? 'Opponent'}'s turn`}
+          ? game.isDraw ? "It's a draw!" : isLocal ? `🎉 ${game.winnerName} wins!` : game.winnerId === game.playerId ? '🎉 You win!' : `${game.winnerName} wins!`
+          : isLocal ? `${(game as any).currentMark === 'X' ? 'Player X' : 'Player O'}'s turn` : game.isMyTurn ? 'Your turn' : `${opponent?.name ?? 'Opponent'}'s turn`}
       </p>
 
       <div className="ttt-board">
@@ -214,6 +227,7 @@ export default function App() {
       {game.screen === 'game-over' && (
         <div className="game-actions">
           <button className="btn btn-primary" onClick={game.rematch}>Rematch</button>
+          {isLocal && <button className="btn btn-text" onClick={() => { localGame.goHome(); setIsLocal(false); }}>Back to Menu</button>}
         </div>
       )}
 

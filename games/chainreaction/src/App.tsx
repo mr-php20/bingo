@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGame } from './hooks/useGame';
+import { useLocalGame } from './hooks/useLocalGame';
 
 const PLAYER_COLORS = [
   '#e17055', // red
@@ -17,11 +18,15 @@ function getColor(colorIndex: number): string {
 }
 
 export default function App() {
-  const game = useGame();
+  const onlineGame = useGame();
+  const localGame = useLocalGame();
+  const [isLocal, setIsLocal] = useState(false);
+  const game = isLocal ? localGame : onlineGame;
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
-  const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');
+  const [mode, setMode] = useState<'menu' | 'join' | 'join-link' | 'local-setup'>('menu');
   const [showRules, setShowRules] = useState(false);
+  const [localPlayerCount, setLocalPlayerCount] = useState(2);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -37,12 +42,12 @@ export default function App() {
 
   const handleCreate = () => {
     if (nameTooShort) return;
-    game.createRoom(name.trim());
+    onlineGame.createRoom(name.trim());
   };
 
   const handleJoin = () => {
     if (nameTooShort || !code.trim()) return;
-    game.joinRoom(name.trim(), code.trim());
+    onlineGame.joinRoom(name.trim(), code.trim());
   };
 
   const handleCopy = useCallback(async () => {
@@ -85,6 +90,8 @@ export default function App() {
             <button className="btn btn-secondary" onClick={() => { if (!nameTooShort) setMode('join'); }} disabled={nameTooShort}>
               Join Game
             </button>
+            <div className="divider"><span>or</span></div>
+            <button className="btn btn-secondary" onClick={() => setMode('local-setup')}>Pass & Play</button>
           </div>
         )}
 
@@ -121,6 +128,26 @@ export default function App() {
             <button className="btn btn-primary" onClick={handleJoin} disabled={nameTooShort}>
               Join Game
             </button>
+          </div>
+        )}
+
+        {mode === 'local-setup' && (
+          <div className="home-actions">
+            <p className="join-link-info">Pass & Play — share one device</p>
+            <div className="cr-player-count">
+              <span className="label">Players</span>
+              <div className="cr-count-selector">
+                {[2, 3, 4, 5, 6, 7, 8].map(n => (
+                  <button
+                    key={n}
+                    className={`cr-count-btn ${localPlayerCount === n ? 'selected' : ''}`}
+                    onClick={() => setLocalPlayerCount(n)}
+                  >{n}</button>
+                ))}
+              </div>
+            </div>
+            <button className="btn btn-primary" onClick={() => { setIsLocal(true); localGame.startLocal(localPlayerCount); }}>Start Game</button>
+            <button className="btn btn-text" onClick={() => setMode('menu')}>Back</button>
           </div>
         )}
 
@@ -212,7 +239,7 @@ export default function App() {
               className={`cr-player-chip ${isCurrent ? 'active' : ''} ${isEliminated ? 'eliminated' : ''}`}
               style={{ '--player-color': getColor(p.colorIndex) } as React.CSSProperties}
             >
-              {p.id === game.playerId ? 'You' : p.name.slice(0, 6)}
+              {isLocal ? p.name.slice(0, 6) : p.id === game.playerId ? 'You' : p.name.slice(0, 6)}
             </div>
           );
         })}
@@ -220,10 +247,12 @@ export default function App() {
 
       <p className="hint-text" style={{ marginBottom: '0.5rem' }}>
         {game.screen === 'game-over'
-          ? game.winnerId === game.playerId ? '🎉 You win!' : `${game.winnerName} wins!`
-          : game.amEliminated
-            ? 'You were eliminated — watching…'
-            : game.isMyTurn ? 'Your turn — tap a cell' : `${currentPlayer?.name ?? 'Opponent'}'s turn`}
+          ? `🎉 ${game.winnerName} wins!`
+          : isLocal
+            ? `${currentPlayer?.name ?? 'Player'}'s turn — tap a cell`
+            : game.amEliminated
+              ? 'You were eliminated — watching…'
+              : game.isMyTurn ? 'Your turn — tap a cell' : `${currentPlayer?.name ?? 'Opponent'}'s turn`}
       </p>
 
       {/* Board */}
@@ -264,6 +293,7 @@ export default function App() {
       {game.screen === 'game-over' && (
         <div className="game-actions">
           <button className="btn btn-primary" onClick={game.rematch}>Rematch</button>
+          {isLocal && <button className="btn btn-text" onClick={() => { localGame.goHome(); setIsLocal(false); setMode('menu'); }}>Back to Menu</button>}
         </div>
       )}
 

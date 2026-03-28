@@ -16,8 +16,3 @@
   max-width: min(95vw, 400px);
   height: auto;
 }
-
-.score-box.active-turn {
-  border-color: var(--accent-1);
-  box-shadow: 0 0 8px rgba(108, 92, 231, 0.3);
-}

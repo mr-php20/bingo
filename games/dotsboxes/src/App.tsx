@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useGame, lineKey } from './hooks/useGame';
+import { useLocalGame } from './hooks/useLocalGame';
 
 const DOT_R = 5;
 const CELL = 60;
@@ -7,7 +8,10 @@ const PAD = 20;
 const LINE_HIT = 10; // clickable line hit area width
 
 export default function App() {
-  const game = useGame();
+  const onlineGame = useGame();
+  const localGame = useLocalGame();
+  const [isLocal, setIsLocal] = useState(false);
+  const game = isLocal ? localGame : onlineGame;
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');
@@ -28,12 +32,17 @@ export default function App() {
 
   const handleCreate = () => {
     if (nameTooShort) return;
-    game.createRoom(name.trim());
+    onlineGame.createRoom(name.trim());
   };
 
   const handleJoin = () => {
     if (nameTooShort || !code.trim()) return;
-    game.joinRoom(name.trim(), code.trim());
+    onlineGame.joinRoom(name.trim(), code.trim());
+  };
+
+  const handlePassAndPlay = () => {
+    setIsLocal(true);
+    localGame.startLocal();
   };
 
   const handleCopy = useCallback(async () => {
@@ -76,6 +85,8 @@ export default function App() {
             <button className="btn btn-secondary" onClick={() => { if (!nameTooShort) setMode('join'); }} disabled={nameTooShort}>
               Join Game
             </button>
+            <div className="divider"><span>or</span></div>
+            <button className="btn btn-secondary" onClick={handlePassAndPlay}>Pass & Play</button>
           </div>
         )}
 
@@ -177,18 +188,21 @@ export default function App() {
   }
 
   // ── Playing / Game Over ──
-  return <Board game={game} showRules={showRules} setShowRules={setShowRules} hoverLine={hoverLine} setHoverLine={setHoverLine} />;
+  return <Board game={game} isLocal={isLocal} localGame={localGame} setIsLocal={setIsLocal} showRules={showRules} setShowRules={setShowRules} hoverLine={hoverLine} setHoverLine={setHoverLine} />;
 }
 
 interface BoardProps {
-  game: ReturnType<typeof useGame>;
+  game: ReturnType<typeof useGame> | ReturnType<typeof useLocalGame>;
+  isLocal: boolean;
+  localGame: ReturnType<typeof useLocalGame>;
+  setIsLocal: (v: boolean) => void;
   showRules: boolean;
   setShowRules: (v: boolean) => void;
   hoverLine: string | null;
   setHoverLine: (v: string | null) => void;
 }
 
-function Board({ game, showRules, setShowRules, hoverLine, setHoverLine }: BoardProps) {
+function Board({ game, isLocal, localGame, setIsLocal, showRules, setShowRules, hoverLine, setHoverLine }: BoardProps) {
   const gs = game.gridSize;
   const boardW = PAD * 2 + (gs - 1) * CELL;
   const boardH = boardW;
@@ -231,20 +245,20 @@ function Board({ game, showRules, setShowRules, hoverLine, setHoverLine }: Board
       </div>
 
       <div className="score-bar">
-        <div className={`score-box ${game.isMyTurn && game.screen === 'playing' ? 'active-turn' : ''}`}>
-          <span className="label" style={{ color: getColor(game.myColor) }}>You</span>
-          <span className="value">{game.scores.find(s => s.id === game.playerId)?.score ?? 0}</span>
+        <div className={`score-box ${(game as any).currentTurn === 'red' && game.screen === 'playing' ? 'active-turn' : ''}`}>
+          <span className="label" style={{ color: getColor('red') }}>{isLocal ? 'Red' : 'You'}</span>
+          <span className="value">{game.scores.find(s => s.id === (isLocal ? 'red' : game.playerId))?.score ?? 0}</span>
         </div>
-        <div className={`score-box ${!game.isMyTurn && game.screen === 'playing' ? 'active-turn' : ''}`}>
-          <span className="label" style={{ color: getColor(opponent?.color ?? 'blue') }}>{opponent?.name ?? 'Opponent'}</span>
-          <span className="value">{game.scores.find(s => s.id !== game.playerId)?.score ?? 0}</span>
+        <div className={`score-box ${(game as any).currentTurn === 'blue' && game.screen === 'playing' ? 'active-turn' : ''}`}>
+          <span className="label" style={{ color: getColor('blue') }}>{isLocal ? 'Blue' : (opponent?.name ?? 'Opponent')}</span>
+          <span className="value">{game.scores.find(s => s.id === (isLocal ? 'blue' : opponent?.id))?.score ?? 0}</span>
         </div>
       </div>
 
       <p className="hint-text" style={{ marginBottom: '0.5rem' }}>
         {game.screen === 'game-over'
-          ? game.isDraw ? "It's a draw!" : game.winnerId === game.playerId ? '🎉 You win!' : `${game.winnerName} wins!`
-          : game.isMyTurn ? 'Your turn — draw a line' : `${opponent?.name ?? 'Opponent'}'s turn`}
+          ? game.isDraw ? "It's a draw!" : isLocal ? `🎉 ${game.winnerName} wins!` : game.winnerId === game.playerId ? '🎉 You win!' : `${game.winnerName} wins!`
+          : isLocal ? `${(game as any).currentTurn === 'red' ? 'Red' : 'Blue'}'s turn — draw a line` : game.isMyTurn ? 'Your turn — draw a line' : `${opponent?.name ?? 'Opponent'}'s turn`}
       </p>
 
       <div className="db-board-container">
@@ -327,6 +341,7 @@ function Board({ game, showRules, setShowRules, hoverLine, setHoverLine }: Board
       {game.screen === 'game-over' && (
         <div className="game-actions">
           <button className="btn btn-primary" onClick={game.rematch}>Rematch</button>
+          {isLocal && <button className="btn btn-text" onClick={() => { localGame.goHome(); setIsLocal(false); }}>Back to Menu</button>}
         </div>
       )}
 

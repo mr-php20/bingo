@@ -8,7 +8,7 @@ import { createEmptyGrid, createEmptyMarked, findNumberPosition, countCompletedL
 type Action =
   | { type: 'SET_PLAYER_NAME'; name: string }
   | { type: 'ROOM_CREATED'; code: string; playerId: string }
-  | { type: 'ROOM_JOINED'; playerId: string; players: PlayerInfo[]; bestOf: number; hideOpponentStatus: boolean }
+  | { type: 'ROOM_JOINED'; playerId: string; players: PlayerInfo[]; bestOf: number; hideOpponentStatus: boolean; code: string }
   | { type: 'PLAYER_JOINED'; player: PlayerInfo }
   | { type: 'SERIES_UPDATED'; bestOf: number }
   | { type: 'HIDE_OPPONENT_UPDATED'; hide: boolean }
@@ -46,6 +46,7 @@ function reducer(state: GameState, action: Action): GameState {
     case 'ROOM_JOINED':
       return {
         ...state,
+        roomCode: action.code,
         playerId: action.playerId,
         players: action.players,
         bestOf: action.bestOf,
@@ -302,6 +303,7 @@ const GameContext = createContext<GameContextType | null>(null);
 export function GameProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialGameState);
   const socketRef = useRef<Socket | null>(null);
+  const pendingCodeRef = useRef<string>('');
 
   useEffect(() => {
     const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:3001';
@@ -318,7 +320,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     });
 
     socket.on('room-joined', (data: { playerId: string; players: PlayerInfo[]; bestOf: number; hideOpponentStatus: boolean }) => {
-      dispatch({ type: 'ROOM_JOINED', playerId: data.playerId, players: data.players, bestOf: data.bestOf, hideOpponentStatus: data.hideOpponentStatus ?? false });
+      dispatch({ type: 'ROOM_JOINED', playerId: data.playerId, players: data.players, bestOf: data.bestOf, hideOpponentStatus: data.hideOpponentStatus ?? false, code: pendingCodeRef.current });
     });
 
     socket.on('player-joined', (data: { player: PlayerInfo }) => {
@@ -383,6 +385,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const joinRoom = useCallback((code: string) => {
     dispatch({ type: 'CLEAR_ERROR' });
+    pendingCodeRef.current = code;
     socketRef.current?.emit('join-room', { code, playerName: state.playerName });
   }, [state.playerName]);
 

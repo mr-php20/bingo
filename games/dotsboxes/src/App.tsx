@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGame, lineKey } from './hooks/useGame';
 
 const DOT_R = 5;
@@ -10,8 +10,45 @@ export default function App() {
   const game = useGame();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
+  const [mode, setMode] = useState<'menu' | 'join' | 'join-link'>('menu');
   const [showRules, setShowRules] = useState(false);
   const [hoverLine, setHoverLine] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomParam = params.get('room');
+    if (roomParam) {
+      setCode(roomParam.toUpperCase());
+      setMode('join-link');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  const nameTooShort = name.trim().length < 3;
+
+  const handleCreate = () => {
+    if (nameTooShort) return;
+    game.createRoom(name.trim());
+  };
+
+  const handleJoin = () => {
+    if (nameTooShort || !code.trim()) return;
+    game.joinRoom(name.trim(), code.trim());
+  };
+
+  const handleCopy = useCallback(async () => {
+    if (game.roomCode) await navigator.clipboard.writeText(game.roomCode);
+  }, [game.roomCode]);
+
+  const handleShare = useCallback(async () => {
+    const gameUrl = `${window.location.origin}${window.location.pathname}?room=${game.roomCode}`;
+    const shareText = `Join my Dots & Boxes game!\n${gameUrl}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Dots & Boxes', text: shareText, url: gameUrl }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(gameUrl);
+    }
+  }, [game.roomCode]);
 
   // ── Home Screen ──
   if (game.screen === 'home') {
@@ -23,19 +60,62 @@ export default function App() {
           <button className="rules-btn" onClick={() => setShowRules(true)}>?</button>
         </div>
 
-        <div className="db-home">
-          <input className="db-input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} maxLength={20} />
-          <button className="btn btn-primary" disabled={name.trim().length < 3} onClick={() => game.createRoom(name.trim())}>
-            Create Room
-          </button>
-          <div className="db-divider"><span>or</span></div>
-          <input className="db-input" placeholder="Room code" value={code} onChange={e => setCode(e.target.value.toUpperCase())} maxLength={6} />
-          <button className="btn btn-secondary" disabled={name.trim().length < 3 || code.trim().length < 4} onClick={() => game.joinRoom(name.trim(), code.trim())}>
-            Join Room
-          </button>
-        </div>
+        {mode === 'menu' && (
+          <div className="home-actions">
+            <input
+              type="text"
+              placeholder="Enter your name (min 3 chars)"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              maxLength={20}
+              autoComplete="off"
+            />
+            <button className="btn btn-primary" onClick={handleCreate} disabled={nameTooShort}>
+              Create Game
+            </button>
+            <button className="btn btn-secondary" onClick={() => { if (!nameTooShort) setMode('join'); }} disabled={nameTooShort}>
+              Join Game
+            </button>
+          </div>
+        )}
 
-        {game.error && <p className="db-error">{game.error}</p>}
+        {mode === 'join' && (
+          <div className="home-actions">
+            <p className="join-link-info">Joining as <strong>{name}</strong></p>
+            <input
+              type="text"
+              placeholder="Enter room code"
+              value={code}
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              maxLength={6}
+              autoComplete="off"
+              style={{ textTransform: 'uppercase', letterSpacing: '0.3em', textAlign: 'center' }}
+            />
+            <button className="btn btn-primary" onClick={handleJoin} disabled={!code.trim() || code.trim().length < 6 || nameTooShort}>
+              Join Room
+            </button>
+            <button className="btn btn-text" onClick={() => setMode('menu')}>Back</button>
+          </div>
+        )}
+
+        {mode === 'join-link' && (
+          <div className="home-actions">
+            <p className="join-link-info">Joining room <strong>{code}</strong></p>
+            <input
+              type="text"
+              placeholder="Enter your name (min 3 chars)"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              maxLength={20}
+              autoComplete="off"
+            />
+            <button className="btn btn-primary" onClick={handleJoin} disabled={nameTooShort}>
+              Join Game
+            </button>
+          </div>
+        )}
+
+        {game.error && <div className="error-toast" onClick={game.clearError}>{game.error}</div>}
         {showRules && <Rules onClose={() => setShowRules(false)} />}
       </div>
     );
@@ -51,28 +131,46 @@ export default function App() {
           <button className="rules-btn" onClick={() => setShowRules(true)}>?</button>
         </div>
 
-        <div className="db-lobby">
-          <div className="db-room-code">Room: <strong>{game.roomCode}</strong></div>
-          <p className="db-players-label">Players:</p>
-          <ul className="db-player-list">
+        <div className="lobby-section">
+          <h2>Game Lobby</h2>
+
+          <div className="room-code-section">
+            <p className="label">Room Code</p>
+            <div className="room-code" onClick={handleCopy} title="Click to copy">
+              {game.roomCode}
+            </div>
+            <div className="room-code-actions">
+              <button className="btn btn-small" onClick={handleCopy}>📋 Copy</button>
+              <button className="btn btn-small" onClick={handleShare}>📤 Share</button>
+            </div>
+          </div>
+
+          <div className="players-section">
+            <p className="label">Players ({game.players.length})</p>
             {game.players.map(p => (
-              <li key={p.id} className={`color-${p.color}`}>
+              <div key={p.id} className={`player-tag color-${p.color}`}>
                 {p.name} {p.id === game.playerId ? '(You)' : ''}
-              </li>
+              </div>
             ))}
-          </ul>
+            {game.players.length < 2 && (
+              <div className="player-tag waiting">Waiting for opponent…</div>
+            )}
+          </div>
 
-          {game.players.length < 2 && <p className="hint-text">Waiting for opponent to join…</p>}
+          {game.isHost && (
+            <button className="btn btn-primary" onClick={game.startGame} disabled={game.players.length < 2}>
+              {game.players.length < 2 ? 'Waiting for Player…' : 'Start Game'}
+            </button>
+          )}
 
-          {game.isHost && game.players.length >= 2 && (
-            <button className="btn btn-primary" onClick={game.startGame}>Start Game</button>
+          {!game.isHost && (
+            <p className="info-text">Waiting for host to start the game…</p>
           )}
-          {!game.isHost && game.players.length >= 2 && (
-            <p className="hint-text">Waiting for host to start…</p>
-          )}
+
+          <button className="btn btn-text" onClick={game.goHome}>Leave Room</button>
         </div>
 
-        {game.error && <p className="db-error">{game.error}</p>}
+        {game.error && <div className="error-toast" onClick={game.clearError}>{game.error}</div>}
         {showRules && <Rules onClose={() => setShowRules(false)} />}
       </div>
     );
@@ -227,12 +325,12 @@ function Board({ game, showRules, setShowRules, hoverLine, setHoverLine }: Board
       </div>
 
       {game.screen === 'game-over' && (
-        <div className="db-actions">
+        <div className="game-actions">
           <button className="btn btn-primary" onClick={game.rematch}>Rematch</button>
         </div>
       )}
 
-      {game.error && <p className="db-error">{game.error}</p>}
+      {game.error && <div className="error-toast" onClick={game.clearError}>{game.error}</div>}
       {showRules && <Rules onClose={() => setShowRules(false)} />}
     </div>
   );

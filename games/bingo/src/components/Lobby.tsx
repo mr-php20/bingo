@@ -54,7 +54,7 @@ export default function Lobby() {
           </div>
         ))}
         {players.length < 2 && (
-          <div className="player-tag waiting">Waiting for players...</div>
+          <div className="player-tag waiting">Waiting for opponent…</div>
         )}
       </div>
 
@@ -106,12 +106,12 @@ export default function Lobby() {
           onClick={startGame}
           disabled={players.length < 2}
         >
-          {players.length < 2 ? 'Waiting for Player...' : 'Start Game'}
+          {players.length < 2 ? 'Waiting for Player…' : 'Start Game'}
         </button>
       )}
 
       {!isHost && (
-        <p className="info-text">Waiting for host to start the game...</p>
+        <p className="info-text">Waiting for host to start the game…</p>
       )}
 
       <button className="btn btn-text" onClick={goHome}>

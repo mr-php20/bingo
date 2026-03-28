@@ -76,6 +76,7 @@ export default function Home() {
 
       {mode === 'join' && (
         <div className="home-actions">
+          <p className="join-link-info">Joining as <strong>{state.playerName}</strong></p>
           <input
             type="text"
             className="input-code"

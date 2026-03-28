@@ -35,6 +35,9 @@ interface GameState {
 
 const serverUrl = (import.meta as unknown as Record<string, Record<string, string>>).env?.VITE_SERVER_URL ?? 'http://localhost:3001';
 
+// Wake up the server on first visit so the cold start happens while the user is on the home screen
+fetch(`${serverUrl}/api/health`).catch(() => {});
+
 export function useGame() {
   const [state, setState] = useState<GameState>({
     screen: 'home',
@@ -146,7 +149,7 @@ export function useGame() {
       }));
     });
 
-    socket.on('player-left', ({ playerName }: { playerName: string }) => {
+    socket.on('player-left', ({ playerId, playerName }: { playerId: string; playerName: string }) => {
       setState(prev => ({
         ...prev,
         screen: 'lobby',
@@ -154,7 +157,7 @@ export function useGame() {
         boxes: new Map(),
         currentTurn: null,
         error: `${playerName} left the game`,
-        players: prev.players.filter(p => p.name !== playerName),
+        players: prev.players.filter(p => p.id !== playerId),
       }));
     });
 
@@ -187,9 +190,37 @@ export function useGame() {
     socketRef.current?.emit('rematch');
   }, []);
 
+  const clearError = useCallback(() => {
+    setState(prev => ({ ...prev, error: null }));
+  }, []);
+
+  const goHome = useCallback(() => {
+    socketRef.current?.disconnect();
+    socketRef.current?.connect();
+    setState(prev => ({
+      ...prev,
+      screen: 'home',
+      playerName: '',
+      playerId: null,
+      roomCode: null,
+      isHost: false,
+      myColor: 'red',
+      players: [],
+      gridSize: 5,
+      lines: new Map(),
+      boxes: new Map(),
+      currentTurn: null,
+      scores: [],
+      winnerId: null,
+      winnerName: null,
+      isDraw: false,
+      error: null,
+    }));
+  }, []);
+
   const isMyTurn = state.currentTurn === state.playerId;
 
-  return { ...state, createRoom, joinRoom, startGame, drawLine, rematch, isMyTurn };
+  return { ...state, createRoom, joinRoom, startGame, drawLine, rematch, clearError, goHome, isMyTurn };
 }
 
 export type { DrawnLine, Color };

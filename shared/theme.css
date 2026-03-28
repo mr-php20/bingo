@@ -382,6 +382,7 @@ input[type="text"]::placeholder {
 @media (max-width: 480px) {
   .game-header h1 { font-size: 1.3rem; }
   .score-box .value { font-size: 1.1rem; }
+  .room-code { font-size: 2rem; }
 }
 
 @supports (padding-top: env(safe-area-inset-top)) {
@@ -389,4 +390,149 @@ input[type="text"]::placeholder {
     padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
+}
+
+/* --- Multiplayer Shared: Home --- */
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.join-link-info {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.join-link-info strong {
+  color: var(--accent-1-light);
+  letter-spacing: 0.15em;
+}
+
+/* --- Multiplayer Shared: Lobby --- */
+.lobby-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.lobby-section h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.room-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-code {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 0.4em;
+  color: var(--accent-2);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  transition: background 0.2s;
+}
+
+.room-code:hover {
+  background: var(--bg-card-hover);
+}
+
+.room-code-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-small:hover {
+  border-color: var(--accent-1);
+}
+
+.label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.info-text {
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.players-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.player-tag {
+  padding: 10px 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+}
+
+.player-tag.waiting {
+  color: var(--text-secondary);
+  border: 2px dashed var(--border-solid);
+  background: transparent;
+}
+
+/* --- Multiplayer Shared: Error Toast --- */
+.error-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--danger);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  z-index: 100;
+  cursor: pointer;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(1rem); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* --- Multiplayer Shared: Game Actions --- */
+.game-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
 }

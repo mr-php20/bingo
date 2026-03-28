@@ -1,0 +1,136 @@
+/* ===== Chain Reaction Game ===== */
+
+/* Player indicator bar */
+.cr-players-bar {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.cr-player-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.cr-player-chip.active {
+  border-color: var(--player-color);
+  color: var(--text-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--player-color) 40%, transparent);
+}
+
+.cr-player-chip.eliminated {
+  opacity: 0.3;
+  text-decoration: line-through;
+}
+
+/* Board */
+.cr-board {
+  display: grid;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: min(95vw, 360px);
+}
+
+.cr-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: default;
+  transition: all 0.15s ease;
+  padding: 0;
+  position: relative;
+}
+
+.cr-cell.clickable {
+  cursor: pointer;
+}
+
+.cr-cell.clickable:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--cell-color);
+}
+
+/* Orbs container */
+.cr-orbs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.cr-orb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.3), inset 2px 2px 4px rgba(255, 255, 255, 0.2);
+  animation: orbPulse 1.5s ease-in-out infinite;
+}
+
+/* 1 orb: centered */
+.cr-orbs-1 .cr-orb:nth-child(1) {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 2 orbs: side by side */
+.cr-orbs-2 .cr-orb:nth-child(1) {
+  top: 50%; left: 30%;
+  transform: translate(-50%, -50%);
+}
+.cr-orbs-2 .cr-orb:nth-child(2) {
+  top: 50%; left: 70%;
+  transform: translate(-50%, -50%);
+}
+
+/* 3 orbs: triangle */
+.cr-orbs-3 .cr-orb:nth-child(1) {
+  top: 25%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.cr-orbs-3 .cr-orb:nth-child(2) {
+  top: 65%; left: 30%;
+  transform: translate(-50%, -50%);
+}
+.cr-orbs-3 .cr-orb:nth-child(3) {
+  top: 65%; left: 70%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Alive count */
+.cr-alive-count {
+  margin-top: 0.8rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Responsive orb sizing */
+@media (max-width: 380px) {
+  .cr-orb {
+    width: 9px;
+    height: 9px;
+  }
+}

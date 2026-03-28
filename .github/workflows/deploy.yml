@@ -51,6 +51,15 @@ jobs:
           npm ci
           npm run build
 
+      - name: Build Chain Reaction
+        working-directory: ./games/chainreaction
+        env:
+          GITHUB_PAGES: 'true'
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+        run: |
+          npm ci
+          npm run build
+
       - name: Build 2048
         working-directory: ./games/2048
         env:
@@ -111,10 +120,11 @@ jobs:
         env:
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
         run: |
-          mkdir -p dist-pages/bingo dist-pages/tictactoe dist-pages/dotsboxes dist-pages/2048 dist-pages/snake dist-pages/sudoku dist-pages/slides dist-pages/pallanguzhi dist-pages/goats-and-tigers dist-pages/ludo
+          mkdir -p dist-pages/bingo dist-pages/tictactoe dist-pages/dotsboxes dist-pages/chainreaction dist-pages/2048 dist-pages/snake dist-pages/sudoku dist-pages/slides dist-pages/pallanguzhi dist-pages/goats-and-tigers dist-pages/ludo
           cp -r games/bingo/dist/* dist-pages/bingo/
           cp -r games/tictactoe/dist/* dist-pages/tictactoe/
           cp -r games/dotsboxes/dist/* dist-pages/dotsboxes/
+          cp -r games/chainreaction/dist/* dist-pages/chainreaction/
           cp -r games/2048/dist/* dist-pages/2048/
           cp -r games/snake/dist/* dist-pages/snake/
           cp -r games/sudoku/dist/* dist-pages/sudoku/

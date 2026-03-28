@@ -3,6 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { registerBingoHandlers, cleanupStaleRooms as cleanupBingoRooms } from './games/bingo/index.js';
+import { registerTicTacToeHandlers, cleanupStaleRooms as cleanupTTTRooms } from './games/tictactoe/index.js';
+import { registerDotsBoxesHandlers, cleanupStaleRooms as cleanupDBRooms } from './games/dotsboxes/index.js';
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
@@ -12,7 +14,7 @@ app.use(express.json());
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', games: ['bingo'], timestamp: Date.now() });
+  res.json({ status: 'ok', games: ['bingo', 'tictactoe', 'dotsboxes'], timestamp: Date.now() });
 });
 
 const httpServer = createServer(app);
@@ -34,10 +36,20 @@ const io = new Server(httpServer, {
 const bingoNsp = io.of('/bingo');
 registerBingoHandlers(bingoNsp);
 
+const tttNsp = io.of('/tictactoe');
+registerTicTacToeHandlers(tttNsp);
+
+const dbNsp = io.of('/dotsboxes');
+registerDotsBoxesHandlers(dbNsp);
+
 // Cleanup stale rooms every 30 minutes
-setInterval(cleanupBingoRooms, 30 * 60 * 1000);
+setInterval(() => {
+  cleanupBingoRooms();
+  cleanupTTTRooms();
+  cleanupDBRooms();
+}, 30 * 60 * 1000);
 
 httpServer.listen(PORT, () => {
   console.log(`Game server running on port ${PORT}`);
-  console.log(`  /bingo namespace active`);
+  console.log(`  /bingo, /tictactoe, /dotsboxes namespaces active`);
 });

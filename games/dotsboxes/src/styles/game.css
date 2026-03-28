@@ -1,0 +1,117 @@
+.db-home, .db-lobby {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  max-width: 320px;
+  width: 100%;
+}
+
+.db-input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.db-input:focus {
+  border-color: var(--accent-1);
+}
+
+.db-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.8rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0.3rem 0;
+}
+
+.db-divider::before,
+.db-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.db-room-code {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  padding: 0.6rem 1.2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  letter-spacing: 2px;
+}
+
+.db-room-code strong {
+  color: var(--accent-1);
+  font-weight: 800;
+}
+
+.db-players-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.db-player-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.db-player-list li {
+  padding: 0.5rem 0.8rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.db-player-list li.color-red {
+  border-left: 3px solid #e17055;
+}
+
+.db-player-list li.color-blue {
+  border-left: 3px solid #00cec9;
+}
+
+.db-board-container {
+  display: flex;
+  justify-content: center;
+}
+
+.db-board {
+  max-width: min(95vw, 400px);
+  height: auto;
+}
+
+.score-box.active-turn {
+  border-color: var(--accent-1);
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.3);
+}
+
+.db-actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.db-error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}

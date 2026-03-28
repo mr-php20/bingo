@@ -1,10 +1,23 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 type Screen = 'home' | 'playing' | 'game-over';
 
 export interface CellData { orbs: number; owner: string | null; }
 interface PlayerInfo { id: string; name: string; colorIndex: number }
 interface ScoreInfo { id: string; name: string; score: number }
+
+export interface FlyingOrb {
+  fromRow: number;
+  fromCol: number;
+  toRow: number;
+  toCol: number;
+  colorIndex: number;
+}
+
+export interface AnimationData {
+  waves: FlyingOrb[][];
+  boardStates: CellData[][][]; // board state before each wave (index 0 = after orb placed, before explosions)
+}
 
 function emptyBoard(rows: number, cols: number): CellData[][] {
   return Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ orbs: 0, owner: null })));
@@ -80,6 +93,8 @@ export function useLocalGame() {
     });
   }, []);
 
+  const pendingAnimRef = useRef<AnimationData | null>(null);
+
   const placeOrb = useCallback((row: number, col: number) => {
     setState(prev => {
       if (prev.screen !== 'playing') return prev;
@@ -93,8 +108,9 @@ export function useLocalGame() {
       board[row][col].owner = currentPlayerId;
       const moveCount = prev.moveCount + 1;
 
-      // Resolve chain explosions
-      resolveExplosions(board, prev.rows, prev.cols);
+      // Resolve chain explosions, collecting wave animation data
+      const animData = resolveExplosionsWithWaves(board, prev.rows, prev.cols, prev.players);
+      pendingAnimRef.current = animData.waves.length > 0 ? animData : null;
 
       // Check eliminations (only after first full round)
       let eliminatedPlayers = [...prev.eliminatedPlayers];
@@ -197,10 +213,22 @@ export function useLocalGame() {
     rematch,
     goHome,
     clearError: () => {},
+    getPendingAnimation: () => {
+      const data = pendingAnimRef.current;
+      pendingAnimRef.current = null;
+      return data;
+    },
   };
 }
 
-function resolveExplosions(board: CellData[][], rows: number, cols: number): void {
+function resolveExplosionsWithWaves(
+  board: CellData[][],
+  rows: number,
+  cols: number,
+  players: PlayerInfo[],
+): AnimationData {
+  const waves: FlyingOrb[][] = [];
+  const boardStates: CellData[][][] = [cloneBoard(board)];
   const maxIterations = rows * cols * 4;
   let iterations = 0;
   const deltas: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
@@ -216,10 +244,15 @@ function resolveExplosions(board: CellData[][], rows: number, cols: number): voi
     }
     if (wave.length === 0) break;
 
+    const orbFlights: FlyingOrb[] = [];
     const additions: { r: number; c: number; owner: string }[] = [];
+
     for (const { row, col } of wave) {
       const cell = board[row][col];
       const owner = cell.owner!;
+      const ownerPlayer = players.find(p => p.id === owner);
+      const colorIndex = ownerPlayer?.colorIndex ?? 0;
+
       cell.orbs -= criticalMass(row, col, rows, cols);
       if (cell.orbs <= 0) {
         cell.orbs = 0;
@@ -230,6 +263,7 @@ function resolveExplosions(board: CellData[][], rows: number, cols: number): voi
         const nc = col + dc;
         if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
           additions.push({ r: nr, c: nc, owner });
+          orbFlights.push({ fromRow: row, fromCol: col, toRow: nr, toCol: nc, colorIndex });
         }
       }
     }
@@ -238,7 +272,12 @@ function resolveExplosions(board: CellData[][], rows: number, cols: number): voi
       board[r][c].orbs++;
       board[r][c].owner = owner;
     }
+
+    waves.push(orbFlights);
+    boardStates.push(cloneBoard(board));
   }
+
+  return { waves, boardStates };
 }
 
 function hasAnyOrbs(board: CellData[][], playerId: string, rows: number, cols: number): boolean {

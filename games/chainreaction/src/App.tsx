@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGame } from './hooks/useGame';
 import { useLocalGame } from './hooks/useLocalGame';
+import type { CellData, AnimationData } from './hooks/useLocalGame';
 
 const PLAYER_COLORS = [
   '#e17055', // red
@@ -220,6 +221,118 @@ export default function App() {
   const currentPlayer = game.players.find(p => p.id === game.currentTurn);
   const activePlayers = game.players.filter(p => !game.eliminatedPlayers.includes(p.id));
 
+  return <GameBoard
+    game={game}
+    isLocal={isLocal}
+    localGame={localGame}
+    showRules={showRules}
+    setShowRules={setShowRules}
+    setIsLocal={setIsLocal}
+    setMode={setMode}
+    currentPlayer={currentPlayer}
+    activePlayers={activePlayers}
+  />;
+}
+
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+
+interface GameBoardProps {
+  game: ReturnType<typeof useGame> | ReturnType<typeof useLocalGame>;
+  isLocal: boolean;
+  localGame: ReturnType<typeof useLocalGame>;
+  showRules: boolean;
+  setShowRules: (v: boolean) => void;
+  setIsLocal: (v: boolean) => void;
+  setMode: (v: 'menu' | 'join' | 'join-link' | 'local-setup') => void;
+  currentPlayer: { id: string; name: string; colorIndex: number } | undefined;
+  activePlayers: { id: string; name: string; colorIndex: number }[];
+}
+
+function GameBoard({ game, isLocal, localGame, showRules, setShowRules, setIsLocal, setMode, currentPlayer, activePlayers }: GameBoardProps) {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [displayBoard, setDisplayBoard] = useState<CellData[][] | null>(null);
+  const [flyingOrbs, setFlyingOrbs] = useState<{ fromX: number; fromY: number; toX: number; toY: number; color: string }[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const boardToRender = displayBoard ?? game.board;
+
+  const getCellCenter = useCallback((row: number, col: number): { x: number; y: number } | null => {
+    const board = boardRef.current;
+    if (!board) return null;
+    const cellIndex = row * game.cols + col;
+    const cells = board.querySelectorAll('.cr-cell');
+    const cell = cells[cellIndex] as HTMLElement | undefined;
+    if (!cell) return null;
+    return {
+      x: cell.offsetLeft + cell.offsetWidth / 2,
+      y: cell.offsetTop + cell.offsetHeight / 2,
+    };
+  }, [game.cols]);
+
+  const animateWaves = useCallback(async (anim: AnimationData) => {
+    setIsAnimating(true);
+    // Show board after orb placed, before explosions
+    setDisplayBoard(anim.boardStates[0]);
+    await sleep(120);
+
+    for (let w = 0; w < anim.waves.length; w++) {
+      const wave = anim.waves[w];
+
+      // Compute flying orb pixel positions from current DOM layout
+      const orbs = wave.map(o => {
+        const from = getCellCenter(o.fromRow, o.fromCol);
+        const to = getCellCenter(o.toRow, o.toCol);
+        return {
+          fromX: from?.x ?? 0,
+          fromY: from?.y ?? 0,
+          toX: to?.x ?? 0,
+          toY: to?.y ?? 0,
+          color: getColor(o.colorIndex),
+        };
+      });
+
+      setFlyingOrbs(orbs);
+      // Wait a frame for elements to mount, then animate
+      await sleep(20);
+      const flyEls = boardRef.current?.querySelectorAll('.cr-flying-orb');
+      const animPromises: Promise<void>[] = [];
+      flyEls?.forEach((el, i) => {
+        const orb = orbs[i];
+        if (!orb) return;
+        const dx = orb.toX - orb.fromX;
+        const dy = orb.toY - orb.fromY;
+        const a = el.animate([
+          { transform: 'translate(-50%, -50%) scale(1.3)', opacity: '1' },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.7)`, opacity: '0.4' },
+        ], { duration: 220, easing: 'ease-in', fill: 'forwards' });
+        animPromises.push(a.finished.then(() => {}));
+      });
+
+      await Promise.all(animPromises).catch(() => {});
+
+      // Update to post-wave board state
+      const nextBoard = anim.boardStates[w + 1] ?? null;
+      setDisplayBoard(nextBoard);
+      setFlyingOrbs([]);
+      await sleep(40);
+    }
+
+    setDisplayBoard(null);
+    setIsAnimating(false);
+  }, [getCellCenter]);
+
+  const handlePlaceOrb = useCallback(async (r: number, c: number) => {
+    if (isAnimating) return;
+    game.placeOrb(r, c);
+
+    if (isLocal && 'getPendingAnimation' in game) {
+      const anim = (game as ReturnType<typeof useLocalGame>).getPendingAnimation();
+      if (anim && anim.waves.length > 0) {
+        await animateWaves(anim);
+      }
+    }
+  }, [game, isLocal, isAnimating, animateWaves]);
+
   return (
     <div className="game-app">
       <div className="game-header">
@@ -256,17 +369,19 @@ export default function App() {
       </p>
 
       {/* Board */}
-      <div className="cr-board" style={{ gridTemplateColumns: `repeat(${game.cols}, 1fr)` }}>
-        {game.board.map((row, r) =>
+      <div ref={boardRef} className="cr-board" style={{ gridTemplateColumns: `repeat(${game.cols}, 1fr)` }}>
+        {boardToRender.map((row, r) =>
           row.map((cell, c) => {
-            const canPlace = game.isMyTurn && !game.amEliminated && game.screen === 'playing'
+            const canPlace = !isAnimating && game.isMyTurn && !game.amEliminated && game.screen === 'playing'
+              && (cell.owner === null || cell.owner === game.playerId);
+            const isPlayable = !isAnimating && game.isMyTurn && !game.amEliminated && game.screen === 'playing'
               && (cell.owner === null || cell.owner === game.playerId);
             return (
               <button
                 key={`${r}-${c}`}
-                className={`cr-cell ${canPlace ? 'clickable' : ''}`}
+                className={`cr-cell ${canPlace ? 'clickable' : ''} ${isPlayable ? 'playable' : ''}`}
                 disabled={!canPlace}
-                onClick={() => game.placeOrb(r, c)}
+                onClick={() => handlePlaceOrb(r, c)}
                 style={{
                   '--cell-color': cell.owner
                     ? getColor(game.players.find(p => p.id === cell.owner)?.colorIndex ?? 0)
@@ -288,6 +403,20 @@ export default function App() {
             );
           })
         )}
+
+        {/* Flying orbs overlay */}
+        {flyingOrbs.map((orb, i) => (
+          <div
+            key={`fly-${i}`}
+            className="cr-flying-orb"
+            style={{
+              left: orb.fromX,
+              top: orb.fromY,
+              background: orb.color,
+              boxShadow: `0 0 8px ${orb.color}, 0 0 4px ${orb.color}`,
+            }}
+          />
+        ))}
       </div>
 
       {game.screen === 'game-over' && (
